@@ -3,10 +3,12 @@ plugins {
     java
     `java-library`
     `maven-publish`
+    signing
+    id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
 }
 
 group = "dev.akif"
-version = "0.1.0-SNAPSHOT"
+version = "0.1.0"
 
 idea {
     module {
@@ -39,37 +41,62 @@ tasks.getByName<Test>("test") {
     useJUnitPlatform()
 }
 
-tasks.jar {
-    manifest {
-        attributes(
-            mapOf(
-                "Title" to project.name,
-                "Version" to project.version,
-                "Author" to "Mehmet Akif Tütüncü",
-                "Email" to "m.akif.tutuncu@gmail.com",
-                "Url" to "https://akif.dev",
-                "License" to "MIT License"
-            )
-        )
-    }
-}
-
 java {
     withSourcesJar()
     withJavadocJar()
 }
 
+nexusPublishing {
+    repositories {
+        sonatype()
+    }
+}
+
 publishing {
     publications {
-        create<MavenPublication>("spring-boot-crud") {
+        create<MavenPublication>("mavenJava") {
+            artifactId = project.name
             from(components["java"])
+            versionMapping {
+                usage("java-api") {
+                    fromResolutionOf("runtimeClasspath")
+                }
+                usage("java-runtime") {
+                    fromResolutionResult()
+                }
+            }
+            pom {
+                name.set(project.name)
+                description.set("Opinionated, REST-ful and generic CRUD operations for Spring Boot applications")
+                url.set("https://akif.dev")
+                licenses {
+                    license {
+                        name.set("MIT License")
+                        url.set("https://opensource.org/licenses/MIT")
+                    }
+                }
+                developers {
+                    developer {
+                        id.set("makiftutuncu")
+                        name.set("Mehmet Akif Tütüncü")
+                        email.set("m.akif.tutuncu@gmail.com")
+                    }
+                }
+                scm {
+                    url.set("https://github.com/makiftutuncu/${project.name}")
+                }
+            }
         }
     }
+}
 
-    repositories {
-        maven {
-            name = "spring-boot-crud"
-            url = uri(layout.buildDirectory.dir("repo"))
-        }
-    }
+signing {
+    val signingKey = properties["signingKey"] as String?
+    val signingPassword = properties["signingPassword"] as String?
+    useInMemoryPgpKeys(signingKey, signingPassword)
+    sign(publishing.publications["mavenJava"])
+}
+
+tasks.javadoc {
+    (options as StandardJavadocDocletOptions).addBooleanOption("html5", true)
 }
