@@ -25,6 +25,7 @@ val lombokVersion = "1.18.24"
 val springVersion = "3.0.1"
 val springdocVersion = "2.0.2"
 val junitVersion = "5.9.2"
+val mockitoJUnitVersion = "5.0.0"
 
 dependencies {
     annotationProcessor("org.projectlombok:lombok:$lombokVersion")
@@ -33,12 +34,27 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation:$springVersion")
     implementation("org.springframework.boot:spring-boot-starter-web:$springVersion")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springdocVersion")
+
+    testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
+    testCompileOnly("org.projectlombok:lombok:$lombokVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
+    testImplementation("org.mockito:mockito-junit-jupiter:$mockitoJUnitVersion")
+    testImplementation("org.springframework.boot:spring-boot-starter-test:$springVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 }
 
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
+    testLogging {
+        events          = setOf(
+            org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED,
+            org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED,
+            org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED
+        )
+        showCauses      = true
+        showExceptions  = true
+        showStackTraces = true
+    }
 }
 
 java {
