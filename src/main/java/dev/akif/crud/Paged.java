@@ -13,8 +13,7 @@ import java.util.function.Function;
  * @param page       Current page number
  * @param perPage    Number of items in a page
  * @param totalPages Number of total pages available
- *
- * @param <A> Type of the data in this page
+ * @param <A>        Type of the data in this page
  */
 public record Paged<A>(
         @NotNull List<A> data,
@@ -41,10 +40,9 @@ public record Paged<A>(
      * items converted by given mapping function
      *
      * @param mapper Conversion function
+     * @param <B>    Type to which mapping function converts
      *
      * @return New {@link Paged} containing converted items
-     *
-     * @param <B> Type to which mapping function converts
      */
     public <B> Paged<B> map(final Function<A, B> mapper) {
         return new Paged<>(

@@ -8,7 +8,7 @@ import java.time.Instant;
  *
  * @param <I> Id type of the data
  */
-public interface BaseModel<I extends Serializable> {
+public interface CRUDModel<I extends Serializable> {
     /**
      * Gets identifier of this model
      *
@@ -36,4 +36,11 @@ public interface BaseModel<I extends Serializable> {
      * @return The instant at which this model is last updated
      */
     Instant updatedAt();
+
+    /**
+     * Gets the instant at which this model is deleted
+     *
+     * @return The instant at which this model is deleted or null if it is not deleted
+     */
+    Instant deletedAt();
 }

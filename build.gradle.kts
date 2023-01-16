@@ -8,7 +8,7 @@ plugins {
 }
 
 group = "dev.akif"
-version = "0.1.1"
+version = "0.2.0"
 
 idea {
     module {
@@ -116,3 +116,5 @@ signing {
 tasks.javadoc {
     (options as StandardJavadocDocletOptions).addBooleanOption("html5", true)
 }
+
+tasks.getByName<Sign>("signMavenJavaPublication").enabled = !project.version.toString().endsWith("-SNAPSHOT")

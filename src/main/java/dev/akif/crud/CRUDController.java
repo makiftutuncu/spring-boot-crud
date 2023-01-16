@@ -1,5 +1,7 @@
 package dev.akif.crud;
 
+import dev.akif.crud.error.CRUDError;
+import dev.akif.crud.error.CRUDErrorException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -59,9 +61,9 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
  * ideally also with a @{@link RequestMapping} with some path prefix for the endpoints.
  *
  * @param <I>  Id type of the data
- * @param <D>  DTO type of the data
- * @param <M>  Model type of the data
  * @param <E>  Entity type of the data
+ * @param <M>  Model type of the data
+ * @param <D>  DTO type of the data
  * @param <CM> Create model type of the data
  * @param <UM> Update model type of the data
  * @param <CD> Create DTO type of the data
@@ -73,14 +75,14 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Validated
 public abstract class CRUDController<
         I extends Serializable,
-        D extends BaseDTO<I>,
-        M extends BaseModel<I>,
-        E extends BaseEntity<I, M>,
-        CM extends BaseCreateModel<I, M, E>,
-        UM extends BaseUpdateModel<I, M, E>,
-        CD extends BaseCreateDTO<I, M, E, CM>,
-        UD extends BaseUpdateDTO<I, M, E, UM>,
-        R extends CRUDRepository<I, M, E>,
+        E extends CRUDEntity<I, E>,
+        M extends CRUDModel<I>,
+        D extends CRUDDTO<I>,
+        CM extends CRUDCreateModel<I, E>,
+        UM extends CRUDUpdateModel<I, E>,
+        CD extends CRUDCreateDTO<I, E, CM>,
+        UD extends CRUDUpdateDTO<I, E, UM>,
+        R extends CRUDRepository<I, E>,
         S extends CRUDService<I, M, E, CM, UM, R>> {
     /** Type name of the data this controller manages */
     protected final String type;
@@ -129,7 +131,7 @@ public abstract class CRUDController<
     ) {
         log.debug("Got request to create new {}: {}", type, createDTO);
 
-        final var createModel = createDTO.toCreateModel();
+        final var createModel = createDTO.withFieldsToCreate();
         log.trace("Built Create{}: {}", type, createModel);
 
         final var model = service.create(createModel);
@@ -154,10 +156,10 @@ public abstract class CRUDController<
     @Operation(summary = GET_ALL_SUMMARY, description = GET_ALL_DESCRIPTION)
     public Paged<D> getAll(
             @Parameter(name = "page", description = PAGE_DESCRIPTION)
-            @RequestParam(required = false, defaultValue = "0")
+            @RequestParam(name = "page", required = false, defaultValue = "0")
             int page,
             @Parameter(name = "perPage", description = PER_PAGE_DESCRIPTION)
-            @RequestParam(required = false, defaultValue = "20")
+            @RequestParam(name = "perPage", required = false, defaultValue = "20")
             int perPage
     ) {
         final var pageRequest = PageRequest.of(page, perPage);
@@ -189,7 +191,7 @@ public abstract class CRUDController<
     @Operation(summary = GET_SUMMARY, description = GET_DESCRIPTION)
     public D get(
             @Parameter(name = "id", description = GET_ID_DESCRIPTION)
-            @PathVariable final I id
+            @PathVariable("id") final I id
     ) {
         log.debug("Got request to get {} {}", type, id);
 
@@ -225,13 +227,13 @@ public abstract class CRUDController<
     @PutMapping(path = "/{id}", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
     public D update(
             @Parameter(name = "id", description = UPDATE_ID_DESCRIPTION)
-            @PathVariable final I id,
+            @PathVariable("id") final I id,
             @Parameter(required = true)
             @RequestBody final UD updateDTO
     ) {
         log.debug("Got request to update {} {}: {}", type, id, updateDTO);
 
-        final var updateModel = updateDTO.toUpdateModel();
+        final var updateModel = updateDTO.withFieldsToUpdate();
         log.trace("Built Update{} {}: {}", type, id, updateModel);
 
         final var model = service.update(id, updateModel);
@@ -259,7 +261,7 @@ public abstract class CRUDController<
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(
             @Parameter(name = "id", description = DELETE_ID_DESCRIPTION)
-            @PathVariable final I id
+            @PathVariable("id") final I id
     ) {
         log.debug("Got request to delete {} {}", type, id);
 
@@ -271,27 +273,27 @@ public abstract class CRUDController<
     private static final String CODE_NO_CONTENT = "204";
     private static final String CODE_NOT_FOUND = "404";
     private static final String CODE_CONFLICT = "409";
-    private static final String NOT_FOUND_RESPONSE = "entity is not found.";
-    private static final String CONFLICT_RESPONSE = "entity with given data already exists.";
+    private static final String NOT_FOUND_RESPONSE = "Entity is not found.";
+    private static final String CONFLICT_RESPONSE = "Entity with given data already exists.";
     private static final String PAGE_DESCRIPTION = "Number of the 0-based page of entities to request";
     private static final String PER_PAGE_DESCRIPTION = "Number of entities to request per page";
 
     private static final String CREATE_SUMMARY = "Create a new entity";
     private static final String CREATE_DESCRIPTION = "Creates a new entity with given data and returns created entity.";
-    private static final String CREATE_RESPONSE = "entity is created successfully.";
+    private static final String CREATE_RESPONSE = "Entity is created successfully.";
     private static final String GET_ALL_SUMMARY = "Get all entities";
     private static final String GET_ALL_DESCRIPTION = "Gets all entities with given pagination.";
-    private static final String GET_ALL_RESPONSE = "entities are returned successfully.";
+    private static final String GET_ALL_RESPONSE = "Entities are returned successfully.";
     private static final String GET_SUMMARY = "Get entity with given id";
     private static final String GET_DESCRIPTION = "Gets entity with given id.";
     private static final String GET_ID_DESCRIPTION = "Id of the entity to request";
-    private static final String GET_RESPONSE = "entity is returned successfully.";
+    private static final String GET_RESPONSE = "Entity is returned successfully.";
     private static final String UPDATE_SUMMARY = "Update entity with given id";
     private static final String UPDATE_DESCRIPTION = "Updates entity with given id with given data and returns updated entity.";
     private static final String UPDATE_ID_DESCRIPTION = "Id of the entity to update";
-    private static final String UPDATE_RESPONSE = "entity is updated successfully.";
+    private static final String UPDATE_RESPONSE = "Entity is updated successfully.";
     private static final String DELETE_SUMMARY = "Delete entity with given id";
     private static final String DELETE_DESCRIPTION = "Deletes entity with given id.";
     private static final String DELETE_ID_DESCRIPTION = "Id of the entity to delete";
-    private static final String DELETE_RESPONSE = "entity is deleted successfully.";
+    private static final String DELETE_RESPONSE = "Entity is deleted successfully.";
 }
