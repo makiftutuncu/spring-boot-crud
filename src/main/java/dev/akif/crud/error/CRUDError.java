@@ -1,4 +1,4 @@
-package dev.akif.crud;
+package dev.akif.crud.error;
 
 import jakarta.validation.constraints.NotNull;
 import org.springframework.http.HttpStatus;

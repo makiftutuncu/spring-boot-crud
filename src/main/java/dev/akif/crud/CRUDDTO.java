@@ -8,7 +8,7 @@ import java.time.Instant;
  *
  * @param <I> Id type of the data
  */
-public interface BaseDTO<I extends Serializable> {
+public interface CRUDDTO<I extends Serializable> {
     /**
      * Gets identifier of this DTO
      *

@@ -1,4 +1,4 @@
-package dev.akif.crud;
+package dev.akif.crud.error;
 
 import lombok.EqualsAndHashCode;
 import lombok.Value;
@@ -12,7 +12,9 @@ import org.springframework.http.HttpStatus;
 @EqualsAndHashCode(callSuper = true)
 @Value
 public class CRUDErrorException extends RuntimeException {
-    /** {@link CRUDError} that occurred */
+    /**
+     * {@link CRUDError} that occurred
+     */
     CRUDError error;
 
     /**
@@ -30,10 +32,8 @@ public class CRUDErrorException extends RuntimeException {
      *
      * @param what Type of what already exists
      * @param data Data describing what already exists
-     *
+     * @param <D>  Type of the data describing what already exists
      * @return {@link CRUDErrorException} containing {@link CRUDError} built from given data
-     *
-     * @param <D> Type of the data describing what already exists
      */
     public static <D> CRUDErrorException alreadyExists(final String what, final D data) {
         return new CRUDErrorException(
@@ -46,10 +46,8 @@ public class CRUDErrorException extends RuntimeException {
      *
      * @param what Type of what is not found
      * @param id   Id of what is not found
-     *
+     * @param <I>  Type of the id of what is not found
      * @return {@link CRUDErrorException} containing {@link CRUDError} built from given data
-     *
-     * @param <I> Type of the id of what is not found
      */
     public static <I> CRUDErrorException notFound(final String what, final I id) {
         return new CRUDErrorException(
