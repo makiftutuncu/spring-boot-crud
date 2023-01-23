@@ -1,6 +1,8 @@
 # spring-boot-crud
 
-**spring-boot-crud** is a library that provides opinionated, REST-ful and generic CRUD (Create, Read, Update and Delete) operations on data models of a backend API application using Spring Boot. Its purpose is to eliminate duplication on mostly straightforward CRUD operations and enforce some best practices.
+**spring-boot-crud** is a library that provides opinionated, REST-ful and generic CRUD (Create, Read, Update and Delete)
+operations on data models of a backend API application using Spring Boot. Its purpose is to eliminate duplication on
+mostly straightforward CRUD operations and enforce some best practices.
 
 It provides
 
@@ -13,15 +15,16 @@ It provides
 * Logging at different layers and levels
 * OpenAPI documentation with Swagger UI
 
-* as long as your data models extend provided base types. You'll be required to provide concrete types to type parameters, provide implementations for a few abstract members, and you'll get all of the above for free.
+* as long as your data models extend provided base types. You'll be required to provide concrete types to type
+  parameters, provide implementations for a few abstract members, and you'll get all of the above for free.
 
 See
 
-* [CRUDController](src/main/java/dev/akif/crud/CRUDController.java)
-* [CRUDService](src/main/java/dev/akif/crud/CRUDService.java)
-* [CRUDRepository](src/main/java/dev/akif/crud/CRUDRepository.java)
-* [CRUDDTO](src/main/java/dev/akif/crud/CRUDDTO.java)
-* [CRUDModel](src/main/java/dev/akif/crud/CRUDModel.java)
-* [CRUDEntity](src/main/java/dev/akif/crud/CRUDEntity.java)
+* [CRUDController](api/src/main/java/dev/akif/crud/CRUDController.java)
+* [CRUDService](api/src/main/java/dev/akif/crud/CRUDService.java)
+* [CRUDRepository](api/src/main/java/dev/akif/crud/CRUDRepository.java)
+* [CRUDDTO](api/src/main/java/dev/akif/crud/CRUDDTO.java)
+* [CRUDModel](api/src/main/java/dev/akif/crud/CRUDModel.java)
+* [CRUDEntity](api/src/main/java/dev/akif/crud/CRUDEntity.java)
 
 and their `Simple`, `Simpler` and `Simplest` variants.
