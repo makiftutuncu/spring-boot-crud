@@ -70,7 +70,7 @@ By extending the CRUDController, developers can quickly set up a working RESTful
 
 ```java
 @RestController
-public class MyController extends CRUDController<
+public class MyController implements CRUDController<
         Long,
         MyEntity,
         MyModel,
