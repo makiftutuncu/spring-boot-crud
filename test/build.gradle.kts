@@ -1,9 +1,35 @@
+import org.jetbrains.dokka.base.DokkaBase
+import org.jetbrains.dokka.base.DokkaBaseConfiguration
+import org.jetbrains.dokka.gradle.AbstractDokkaLeafTask
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.net.URL
+import java.time.LocalDate
+
 plugins {
     idea
-    java
+    kotlin("jvm") version "1.8.0"
     `java-library`
     `maven-publish`
     signing
+}
+
+val springVersion = "3.0.1"
+val junitVersion = "5.9.2"
+
+dependencies {
+    implementation(project(":api"))
+    implementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa:$springVersion")
+    implementation("org.springframework.boot:spring-boot-starter-test:$springVersion")
+    implementation("org.springframework.boot:spring-boot-starter-web:$springVersion")
+}
+
+buildscript {
+    dependencies {
+        classpath("org.jetbrains.dokka:dokka-base:1.7.20")
+    }
 }
 
 idea {
@@ -17,15 +43,24 @@ repositories {
     mavenCentral()
 }
 
-val springVersion = "3.0.1"
-val junitVersion = "5.9.2"
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    withSourcesJar()
+}
 
-dependencies {
-    implementation(project(":api"))
-    implementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa:$springVersion")
-    implementation("org.springframework.boot:spring-boot-starter-test:$springVersion")
-    implementation("org.springframework.boot:spring-boot-starter-web:$springVersion")
+tasks.withType<KotlinCompile> {
+    kotlinOptions {
+        freeCompilerArgs = listOf("-Xjsr305=strict", "-Xjvm-default=all")
+        jvmTarget = JvmTarget.JVM_17.target
+        languageVersion = KotlinVersion.KOTLIN_1_8.version
+    }
+}
+
+tasks.register<Jar>("dokkaHtmlJar") {
+    dependsOn(tasks.dokkaHtml)
+    from(tasks.dokkaHtml.flatMap { it.outputDirectory })
+    archiveClassifier.set("javadoc")
 }
 
 tasks.getByName<Test>("test") {
@@ -42,9 +77,39 @@ tasks.getByName<Test>("test") {
     }
 }
 
-java {
-    withSourcesJar()
-    withJavadocJar()
+tasks.dokkaHtml.configure {
+    dokkaSourceSets {
+        named("main") {
+            suppress.set(false)
+            reportUndocumented.set(true)
+            skipEmptyPackages.set(true)
+            skipDeprecated.set(false)
+            suppressGeneratedFiles.set(true)
+            includes.from("Module.md")
+            sourceLink {
+                localDirectory.set(file("src/main/kotlin"))
+                remoteUrl.set(URL("https://github.com/makiftutuncu/spring-boot-crud/blob/main/test/src/main/kotlin"))
+                remoteLineSuffix.set("#L")
+            }
+        }
+    }
+    pluginConfiguration<DokkaBase, DokkaBaseConfiguration> {
+        footerMessage = "&#169; ${LocalDate.now().year} Mehmet Akif Tütüncü"
+        separateInheritedMembers = true
+    }
+}
+
+tasks.withType<AbstractDokkaLeafTask>().configureEach {
+    dokkaSourceSets.configureEach {
+        project(":api")
+            .sourceSets
+            .map { it.allSource.sourceDirectories }
+            .flatten()
+            .run {
+                sourceRoots.from(this)
+                suppressedFiles.from(this)
+            }
+    }
 }
 
 publishing {
@@ -52,6 +117,7 @@ publishing {
         create<MavenPublication>("mavenJava") {
             artifactId = "${rootProject.name}-${project.name}"
             from(components["java"])
+            artifact(tasks["dokkaHtmlJar"])
             versionMapping {
                 usage("java-api") {
                     fromResolutionOf("runtimeClasspath")
@@ -95,8 +161,4 @@ signing {
     val signingPassword = properties["signingPassword"] as String?
     useInMemoryPgpKeys(signingKey, signingPassword)
     sign(publishing.publications["mavenJava"])
-}
-
-tasks.javadoc {
-    (options as StandardJavadocDocletOptions).addBooleanOption("html5", true)
 }

@@ -1,30 +1,32 @@
 plugins {
-    idea
-    java
-    `java-library`
-    `maven-publish`
-    signing
+    kotlin("jvm") version "1.8.0"
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
+    id("org.jetbrains.dokka") version "1.7.20"
 }
 
 allprojects {
     group = "dev.akif"
-    version = "0.3.0-SNAPSHOT"
+    version = "0.3.0"
+
+    apply(plugin = "org.jetbrains.dokka")
 }
 
-idea {
-    module {
-        isDownloadJavadoc = true
-        isDownloadSources = true
+kotlin {
+    jvmToolchain(17)
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(17))
     }
-}
-
-repositories {
-    mavenCentral()
 }
 
 nexusPublishing {
     repositories {
         sonatype()
     }
+}
+
+repositories {
+    mavenCentral()
 }
