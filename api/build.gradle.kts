@@ -1,20 +1,17 @@
+import org.jetbrains.dokka.base.DokkaBase
+import org.jetbrains.dokka.base.DokkaBaseConfiguration
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import java.net.URL
+import java.time.LocalDate
+
 plugins {
     idea
-    java
+    kotlin("jvm") version "1.8.0"
     `java-library`
     `maven-publish`
     signing
-}
-
-idea {
-    module {
-        isDownloadJavadoc = true
-        isDownloadSources = true
-    }
-}
-
-repositories {
-    mavenCentral()
 }
 
 val lombokVersion = "1.18.24"
@@ -39,6 +36,64 @@ dependencies {
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 }
 
+buildscript {
+    dependencies {
+        classpath("org.jetbrains.dokka:dokka-base:1.7.20")
+    }
+}
+
+idea {
+    module {
+        isDownloadJavadoc = true
+        isDownloadSources = true
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+    withSourcesJar()
+}
+
+tasks.withType<KotlinCompile> {
+    kotlinOptions {
+        freeCompilerArgs = listOf("-Xjsr305=strict", "-Xjvm-default=all")
+        jvmTarget = JvmTarget.JVM_17.target
+        languageVersion = KotlinVersion.KOTLIN_1_8.version
+    }
+}
+
+tasks.register<Jar>("dokkaHtmlJar") {
+    dependsOn(tasks.dokkaHtml)
+    from(tasks.dokkaHtml.flatMap { it.outputDirectory })
+    archiveClassifier.set("javadoc")
+}
+
+tasks.dokkaHtml.configure {
+    dokkaSourceSets {
+        named("main") {
+            reportUndocumented.set(true)
+            skipEmptyPackages.set(true)
+            skipDeprecated.set(false)
+            suppressGeneratedFiles.set(true)
+            includes.from("Module.md")
+            sourceLink {
+                localDirectory.set(file("src/main/kotlin"))
+                remoteUrl.set(URL("https://github.com/makiftutuncu/spring-boot-crud/blob/main/api/src/main/kotlin"))
+                remoteLineSuffix.set("#L")
+            }
+        }
+    }
+    pluginConfiguration<DokkaBase, DokkaBaseConfiguration> {
+        footerMessage = "&#169; ${LocalDate.now().year} Mehmet Akif Tütüncü"
+        separateInheritedMembers = true
+    }
+}
+
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
     testLogging {
@@ -53,16 +108,12 @@ tasks.getByName<Test>("test") {
     }
 }
 
-java {
-    withSourcesJar()
-    withJavadocJar()
-}
-
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             artifactId = "${rootProject.name}-${project.name}"
             from(components["java"])
+            artifact(tasks["dokkaHtmlJar"])
             versionMapping {
                 usage("java-api") {
                     fromResolutionOf("runtimeClasspath")
@@ -106,8 +157,4 @@ signing {
     val signingPassword = properties["signingPassword"] as String?
     useInMemoryPgpKeys(signingKey, signingPassword)
     sign(publishing.publications["mavenJava"])
-}
-
-tasks.javadoc {
-    (options as StandardJavadocDocletOptions).addBooleanOption("html5", true)
 }
