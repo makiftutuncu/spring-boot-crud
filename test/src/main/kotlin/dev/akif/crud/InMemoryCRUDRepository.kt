@@ -62,17 +62,15 @@ class InMemoryCRUDRepository<
         return entity
     }
 
-    override fun updateByVersion(entity: E, version: Int): Int {
+    override fun update(entity: E): Int {
         handleDuplicates(entity)
         return entity.id
             ?.let { entities[it] }
-            ?.takeIf { it.version == version }
+            ?.takeIf { it.version == entity.version }
             ?.let { entity.id?.let { id -> entities.replace(id, entity) } }
             ?.let { 1 }
             ?: 0
     }
-
-    override fun flush() {}
 
     /**
      * Clears the repository for testing

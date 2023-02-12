@@ -31,8 +31,8 @@ import java.util.function.Supplier
  */
 abstract class CRUDService<
         I : Serializable,
-        out M : CRUDModel<I>,
         E : CRUDEntity<I, E>,
+        out M : CRUDModel<I>,
         in CM : CRUDCreateModel,
         in UM : CRUDUpdateModel,
         out Mapper : CRUDMapper<I, E, M, CM, UM>>(
@@ -110,7 +110,7 @@ abstract class CRUDService<
         log.trace("Built {}Entity {} to update: {}", typeName, id, entity)
         val expectedVersion = entity.version ?: 0
         persist(
-            { assertSingleRowIsAffected(repository.updateByVersion(entity, expectedVersion), expectedVersion) },
+            { assertSingleRowIsAffected(repository.update(entity), expectedVersion) },
             updateModel
         )
         log.trace("Updated {}Entity {}: {}", typeName, id, entity)
@@ -134,7 +134,7 @@ abstract class CRUDService<
         log.trace("Built {}Entity {} to delete: {}", typeName, id, entity)
         val expectedVersion = entity.version ?: 0
         persist(
-            { assertSingleRowIsAffected(repository.updateByVersion(entity, expectedVersion), expectedVersion) },
+            { assertSingleRowIsAffected(repository.update(entity), expectedVersion) },
             "with id $id"
         )
         log.trace("Deleted {}Entity {}", typeName, id)
@@ -153,9 +153,7 @@ abstract class CRUDService<
     @Transactional
     protected open fun <A> persist(action: Supplier<A>, data: Any): A {
         return try {
-            val a = action.get()
-            repository.flush()
-            a
+            action.get()
         } catch (t: Throwable) {
             val cause = NestedExceptionUtils.getMostSpecificCause(t)
             if (cause is CRUDErrorException) {

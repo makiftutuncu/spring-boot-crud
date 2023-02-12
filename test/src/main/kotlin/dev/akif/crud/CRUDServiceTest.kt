@@ -40,7 +40,7 @@ abstract class CRUDServiceTest<
         UM : CRUDUpdateModel,
         Mapper : CRUDMapper<I, E, M, CM, UM>,
         TestMapper : CRUDTestMapper<I, E, M, CM, UM>,
-        S : CRUDService<I, M, E, CM, UM, Mapper>>(
+        S : CRUDService<I, E, M, CM, UM, Mapper>>(
     protected val typeName: String,
     protected val mapper: Mapper,
     protected val testMapper: TestMapper,

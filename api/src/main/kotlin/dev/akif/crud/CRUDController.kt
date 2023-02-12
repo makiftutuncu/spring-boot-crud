@@ -89,7 +89,7 @@ abstract class CRUDController<
         in UD : CRUDUpdateDTO,
         out Mapper : CRUDMapper<I, E, M, CM, UM>,
         out DTOMapper : CRUDDTOMapper<I, M, D, CM, UM, CD, UD>,
-        out S : CRUDService<I, M, E, CM, UM, Mapper>>(
+        out S : CRUDService<I, E, M, CM, UM, Mapper>>(
     protected open val typeName: String,
     protected open val service: S,
     protected open val mapper: DTOMapper
