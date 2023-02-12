@@ -32,26 +32,19 @@ abstract class CRUDEntity<I : Serializable, out E : CRUDEntity<I, E>>(
      * Marks this entity as updated at given time, also incrementing its version
      *
      * @param now Instant at which this entity is updated
-     * @return Updated entity
      */
-    @Suppress("UNCHECKED_CAST")
-    fun updatedNow(now: Instant): E {
+    fun updatedNow(now: Instant) {
         version = version?.plus(1)
         updatedAt = now
-        return this as E
     }
 
     /**
      * Marks this entity as deleted at given time, also setting updated at and incrementing its version
      *
      * @param now Instant at which this entity is deleted
-     * @return Deleted entity
      */
-    @Suppress("UNCHECKED_CAST")
-    fun markAsDeleted(now: Instant): E {
-        version = version?.plus(1)
-        updatedAt = now
+    fun markAsDeleted(now: Instant) {
         deletedAt = now
-        return this as E
+        updatedNow(now)
     }
 }

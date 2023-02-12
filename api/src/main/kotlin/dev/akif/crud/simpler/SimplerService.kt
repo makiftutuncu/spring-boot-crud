@@ -23,4 +23,4 @@ abstract class SimplerService<
     override val clock: Clock,
     override val repository: SimplerRepository<I, E>,
     override val mapper: Mapper
-) : CRUDService<I, M, E, M, M, Mapper>(typeName, clock, repository, mapper)
+) : CRUDService<I, E, M, M, M, Mapper>(typeName, clock, repository, mapper)

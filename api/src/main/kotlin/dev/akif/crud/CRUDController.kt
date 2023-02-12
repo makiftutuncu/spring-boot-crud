@@ -89,7 +89,7 @@ abstract class CRUDController<
         in UD : CRUDUpdateDTO,
         out Mapper : CRUDMapper<I, E, M, CM, UM>,
         out DTOMapper : CRUDDTOMapper<I, M, D, CM, UM, CD, UD>,
-        out S : CRUDService<I, M, E, CM, UM, Mapper>>(
+        out S : CRUDService<I, E, M, CM, UM, Mapper>>(
     protected open val typeName: String,
     protected open val service: S,
     protected open val mapper: DTOMapper
@@ -115,13 +115,13 @@ abstract class CRUDController<
     fun create(
         @Parameter(required = true) @RequestBody createDTO: CD
     ): D {
-        log.debug("Got request to create new {}: {}", typeName, createDTO)
+        log.debug("Got request to create new $typeName: $createDTO")
         val createModel = mapper.createDTOToCreateModel(createDTO)
-        log.trace("Built Create{}: {}", typeName, createModel)
+        log.trace("Built Create$typeName: $createModel")
         val model = service.create(createModel)
-        log.trace("Created {}: {}", typeName, model)
+        log.trace("Created $typeName: $model")
         val dto = mapper.modelToDTO(model)
-        log.trace("Built {}DTO: {}", typeName, dto)
+        log.trace("Built ${typeName}DTO: $dto")
         return dto
     }
 
@@ -148,11 +148,11 @@ abstract class CRUDController<
         ) perPage: Int
     ): Paged<D> {
         val pageRequest = PageRequest.of(page, perPage)
-        log.debug("Got request to get {} {}", typeName, pageRequest)
+        log.debug("Got request to get $typeName $pageRequest")
         val pagedModels = service.getAll(pageRequest)
-        log.trace("Got {} {}: {}", typeName, pageRequest, pagedModels.data)
+        log.trace("Got $typeName $pageRequest: ${pagedModels.data}")
         val pagedDTOs = pagedModels.map(mapper::modelToDTO)
-        log.trace("Built a paged DTOs of {}: {}", typeName, pagedDTOs.data)
+        log.trace("Built a paged DTOs of $typeName: ${pagedDTOs.data}")
         return pagedDTOs
     }
 
@@ -176,11 +176,11 @@ abstract class CRUDController<
     fun get(
         @Parameter(name = "id", description = GET_ID_DESCRIPTION) @PathVariable("id") id: I
     ): D {
-        log.debug("Got request to get {} {}", typeName, id)
+        log.debug("Got request to get $typeName $id")
         val model = service.get(id) ?: throw CRUDErrorException.notFound(typeName, id)
-        log.trace("Got {} {}: {}", typeName, id, model)
+        log.trace("Got $typeName $id: $model")
         val dto = mapper.modelToDTO(model)
-        log.trace("Built {}DTO {}: {}", typeName, id, dto)
+        log.trace("Built ${typeName}DTO $id: $dto")
         return dto
     }
 
@@ -218,13 +218,13 @@ abstract class CRUDController<
         @Parameter(name = "id", description = UPDATE_ID_DESCRIPTION) @PathVariable("id") id: I,
         @Parameter(required = true) @RequestBody updateDTO: UD
     ): D {
-        log.debug("Got request to update {} {}: {}", typeName, id, updateDTO)
+        log.debug("Got request to update $typeName $id: $updateDTO")
         val updateModel = mapper.updateDTOToUpdateModel(updateDTO)
-        log.trace("Built Update{} {}: {}", typeName, id, updateModel)
+        log.trace("Built Update$typeName $id: $updateModel")
         val model = service.update(id, updateModel)
-        log.trace("Updated {} {}: {}", typeName, id, model)
+        log.trace("Updated $typeName $id: $model")
         val dto = mapper.modelToDTO(model)
-        log.trace("Built {}DTO {}: {}", typeName, id, dto)
+        log.trace("Built ${typeName}DTO $id: $dto")
         return dto
     }
 
@@ -248,7 +248,7 @@ abstract class CRUDController<
     fun delete(
         @Parameter(name = "id", description = DELETE_ID_DESCRIPTION) @PathVariable("id") id: I
     ) {
-        log.debug("Got request to delete {} {}", typeName, id)
+        log.debug("Got request to delete $typeName $id")
         service.delete(id)
     }
 

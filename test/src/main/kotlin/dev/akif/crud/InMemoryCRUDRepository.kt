@@ -34,7 +34,7 @@ class InMemoryCRUDRepository<
 
     init {
         initialEntities.forEach {
-            it.id?.let { id ->
+            it.id?.also { id ->
                 entities[id] = it
             }
         }
@@ -58,21 +58,19 @@ class InMemoryCRUDRepository<
 
     override fun save(entity: E): E {
         handleDuplicates(entity)
-        entity.id?.run { entities[this] = entity }
+        entity.id?.also { entities[it] = entity }
         return entity
     }
 
-    override fun updateByVersion(entity: E, version: Int): Int {
+    override fun update(entity: E): Int {
         handleDuplicates(entity)
         return entity.id
             ?.let { entities[it] }
-            ?.takeIf { it.version == version }
+            ?.takeIf { it.version == entity.version }
             ?.let { entity.id?.let { id -> entities.replace(id, entity) } }
             ?.let { 1 }
             ?: 0
     }
-
-    override fun flush() {}
 
     /**
      * Clears the repository for testing

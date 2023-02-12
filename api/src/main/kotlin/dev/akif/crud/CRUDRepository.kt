@@ -3,8 +3,10 @@ package dev.akif.crud
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.Modifying
+import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.NoRepositoryBean
 import org.springframework.data.repository.Repository
+import org.springframework.transaction.annotation.Transactional
 import java.io.Serializable
 import java.util.*
 
@@ -40,21 +42,18 @@ interface CRUDRepository<I : Serializable, E : CRUDEntity<I, E>> : Repository<E,
      * @param entity Entity to save
      * @return Saved entity
      */
-    @Modifying
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Transactional
     fun save(entity: E): E
 
     /**
-     * Updates given entity if it is at given version
+     * Updates given entity if it is at set version using optimistic locking
      *
      * @param entity  Entity to save
-     * @param version Expected version of the entity before the update
      * @return Number of affected rows
      */
-    @Modifying
-    fun updateByVersion(entity: E, version: Int): Int
-
-    /**
-     * Flushes changes made to the entities, meaning any change will be persisted.
-     */
-    fun flush()
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Transactional
+    @Query("UPDATE #{#entityName} e SET e = :entity WHERE e.id = :#{#entity.id} AND e.version = :#{#entity.version}")
+    fun update(entity: E): Int
 }
