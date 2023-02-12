@@ -49,13 +49,13 @@ abstract class CRUDService<
      */
     @Transactional
     open fun create(createModel: CM): M {
-        log.info("Creating new {}: {}", typeName, createModel)
+        log.info("Creating new $typeName: $createModel")
         val entity = mapper.entityToBeCreatedFrom(createModel, Instant.now(clock))
-        log.trace("Built {}Entity: {}", typeName, entity)
+        log.trace("Built ${typeName}Entity: $entity")
         val saved = persist({ repository.save(entity) }, createModel)
-        log.trace("Saved {}Entity: {}", typeName, saved)
+        log.trace("Saved ${typeName}Entity: $saved")
         val model = mapper.entityToModel(saved)
-        log.trace("Built {}: {}", typeName, model)
+        log.trace("Built $typeName: $model")
         return model
     }
 
@@ -66,11 +66,11 @@ abstract class CRUDService<
      * @return Page of models of entities
      */
     open fun getAll(pageable: Pageable): Paged<M> {
-        log.info("Getting {} {}", typeName, pageable)
+        log.info("Getting $typeName $pageable")
         val entities = repository.findAllByDeletedAtIsNull(pageable)
-        log.trace("Found {}Entity {}: {}", typeName, pageable, entities.content)
+        log.trace("Found ${typeName}Entity $pageable: ${entities.content}")
         val models = entities.map(mapper::entityToModel)
-        log.trace("Built {} {}: {}", typeName, pageable, models.content)
+        log.trace("Built $typeName $pageable: ${models.content}")
         return Paged(models)
     }
 
@@ -81,13 +81,13 @@ abstract class CRUDService<
      * @return Model of the entity with given id
      */
     open fun get(id: I): M? {
-        log.info("Getting {} {}", typeName, id)
+        log.info("Getting $typeName $id")
         val entity = repository.findByIdAndDeletedAtIsNull(id)?.also {
-            log.trace("Found {}Entity {}: {}", typeName, id, it)
+            log.trace("Found ${typeName}Entity $id: $it")
         }
         return entity?.let {
             val m = mapper.entityToModel(it)
-            log.trace("Built {} {}: {}", typeName, id, m)
+            log.trace("Built $typeName $id: $m")
             m
         }
     }
@@ -101,21 +101,21 @@ abstract class CRUDService<
      */
     @Transactional
     open fun update(id: I, updateModel: UM): M {
-        log.info("Updating {} {}: {}", typeName, id, updateModel)
+        log.info("Updating $typeName $id: $updateModel")
         val entity =
             repository.findByIdAndDeletedAtIsNull(id) ?: throw CRUDErrorException.notFound(typeName, id)
-        log.trace("Found {}Entity {} to update: {}", typeName, id, entity)
+        log.trace("Found ${typeName}Entity $id to update: $entity")
         mapper.updateEntityWith(updateModel, entity)
         entity.updatedNow(Instant.now(clock))
-        log.trace("Built {}Entity {} to update: {}", typeName, id, entity)
+        log.trace("Built ${typeName}Entity $id to update: $entity")
         val expectedVersion = entity.version ?: 0
         persist(
             { assertSingleRowIsAffected(repository.update(entity), expectedVersion) },
             updateModel
         )
-        log.trace("Updated {}Entity {}: {}", typeName, id, entity)
+        log.trace("Updated ${typeName}Entity $id: $entity")
         val model = mapper.entityToModel(entity)
-        log.trace("Built {} {}: {}", typeName, id, model)
+        log.trace("Built $typeName $id: $model")
         return model
     }
 
@@ -126,18 +126,18 @@ abstract class CRUDService<
      */
     @Transactional
     open fun delete(id: I) {
-        log.info("Deleting {} {}", typeName, id)
+        log.info("Deleting $typeName $id")
         val entity =
             repository.findByIdAndDeletedAtIsNull(id) ?: throw CRUDErrorException.notFound(typeName, id)
-        log.trace("Found {}Entity {} to delete: {}", typeName, id, entity)
+        log.trace("Found ${typeName}Entity $id to delete: $entity")
         entity.markAsDeleted(Instant.now(clock))
-        log.trace("Built {}Entity {} to delete: {}", typeName, id, entity)
+        log.trace("Built ${typeName}Entity $id to delete: $entity")
         val expectedVersion = entity.version ?: 0
         persist(
             { assertSingleRowIsAffected(repository.update(entity), expectedVersion) },
             "with id $id"
         )
-        log.trace("Deleted {}Entity {}", typeName, id)
+        log.trace("Deleted ${typeName}Entity $id")
     }
 
     /**
