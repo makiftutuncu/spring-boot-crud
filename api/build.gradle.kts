@@ -76,6 +76,7 @@ tasks.register<Jar>("dokkaHtmlJar") {
 tasks.dokkaHtml.configure {
     dokkaSourceSets {
         named("main") {
+            failOnWarning.set(true)
             reportUndocumented.set(true)
             skipEmptyPackages.set(true)
             skipDeprecated.set(false)

@@ -105,15 +105,16 @@ abstract class CRUDService<
         val entity =
             repository.findByIdAndDeletedAtIsNull(id) ?: throw CRUDErrorException.notFound(typeName, id)
         log.trace("Found {}Entity {} to update: {}", typeName, id, entity)
-        val updated = mapper.updateEntityWith(updateModel, entity).updatedNow(Instant.now(clock))
-        log.trace("Built {}Entity {} to update: {}", typeName, id, updated)
-        val expectedVersion = updated.version ?: 0
+        mapper.updateEntityWith(updateModel, entity)
+        entity.updatedNow(Instant.now(clock))
+        log.trace("Built {}Entity {} to update: {}", typeName, id, entity)
+        val expectedVersion = entity.version ?: 0
         persist(
-            { assertSingleRowIsAffected(repository.updateByVersion(updated, expectedVersion), expectedVersion) },
+            { assertSingleRowIsAffected(repository.updateByVersion(entity, expectedVersion), expectedVersion) },
             updateModel
         )
-        log.trace("Updated {}Entity {}: {}", typeName, id, updated)
-        val model = mapper.entityToModel(updated)
+        log.trace("Updated {}Entity {}: {}", typeName, id, entity)
+        val model = mapper.entityToModel(entity)
         log.trace("Built {} {}: {}", typeName, id, model)
         return model
     }
@@ -129,11 +130,11 @@ abstract class CRUDService<
         val entity =
             repository.findByIdAndDeletedAtIsNull(id) ?: throw CRUDErrorException.notFound(typeName, id)
         log.trace("Found {}Entity {} to delete: {}", typeName, id, entity)
-        val deleted = entity.markAsDeleted(Instant.now(clock))
-        log.trace("Built {}Entity {} to delete: {}", typeName, id, deleted)
-        val expectedVersion = deleted.version ?: 0
+        entity.markAsDeleted(Instant.now(clock))
+        log.trace("Built {}Entity {} to delete: {}", typeName, id, entity)
+        val expectedVersion = entity.version ?: 0
         persist(
-            { assertSingleRowIsAffected(repository.updateByVersion(deleted, expectedVersion), expectedVersion) },
+            { assertSingleRowIsAffected(repository.updateByVersion(entity, expectedVersion), expectedVersion) },
             "with id $id"
         )
         log.trace("Deleted {}Entity {}", typeName, id)

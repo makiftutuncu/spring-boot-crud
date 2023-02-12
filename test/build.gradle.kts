@@ -80,7 +80,7 @@ tasks.getByName<Test>("test") {
 tasks.dokkaHtml.configure {
     dokkaSourceSets {
         named("main") {
-            suppress.set(false)
+            failOnWarning.set(true)
             reportUndocumented.set(true)
             skipEmptyPackages.set(true)
             skipDeprecated.set(false)
