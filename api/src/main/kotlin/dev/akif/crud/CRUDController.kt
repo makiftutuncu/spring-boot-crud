@@ -1,5 +1,6 @@
 package dev.akif.crud
 
+import dev.akif.crud.common.Paged
 import dev.akif.crud.error.CRUDError
 import dev.akif.crud.error.CRUDErrorException
 import io.swagger.v3.oas.annotations.Operation
@@ -18,45 +19,6 @@ import java.io.Serializable
 
 /**
  * Base implementation of a controller for API layer providing CRUD operations
- *
- * For some **Foo** data that have **Long** ids, a **FooController** defined as
- *
- * ```kotlin
- * @RestController
- * @RequestMapping("/foo")
- * class FooController(
- *     service: FooService,
- *     dtoMapper: FooDTOMapper
- * ) : CRUDController<
- *         Long,
- *         FooDTO,
- *         Foo,
- *         FooEntity,
- *         CreateFoo,
- *         UpdateFoo,
- *         CreateFooDTO,
- *         UpdateFooDTO,
- *         FooMapper,
- *         FooDTOMapper,
- *         FooService>("Foo", service, dtoMapper)
- * ```
- * automatically implements
- * ```kotlin
- * @PostMapping("/")
- * fun create(createDTO: CreateFooDTO): FooDTO
- *
- * @GetMapping("/")
- * fun getAll(page: Int, perPage: Int): Paged<FooDTO>
- *
- * @GetMapping("/{id}")
- * fun get(id: Long): FooDTO
- *
- * @PutMapping("/{id}")
- * fun update(id: Long, updateDTO: UpdateFooDTO): FooDTO
- *
- * @DeleteMapping("/{id}")
- * fun delete(id: Long)
- * ```
  *
  * This is meant to be extended from a **@RestController** class,
  * ideally also with a **@RequestMapping** with some path prefix for the endpoints.

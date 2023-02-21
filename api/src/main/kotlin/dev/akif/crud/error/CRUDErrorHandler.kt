@@ -22,6 +22,7 @@ interface CRUDErrorHandler {
     @ExceptionHandler(CRUDErrorException::class)
     fun handleCRUDError(cee: CRUDErrorException): ResponseEntity<CRUDError> {
         val e = cee.error
+        log.error(e.message)
         return ResponseEntity.status(e.code).contentType(MediaType.APPLICATION_JSON).body(e)
     }
 

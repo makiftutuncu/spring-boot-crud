@@ -1,4 +1,4 @@
-package dev.akif.crud
+package dev.akif.crud.common
 
 import org.springframework.data.domain.Page
 
@@ -45,5 +45,20 @@ data class Paged<out A>(
             perPage,
             totalPages
         )
+    }
+
+    /** @suppress */
+    companion object {
+        /**
+         * Builds an empty [Paged]
+         *
+         * @param page       Requested page number
+         * @param perPage    Requested number of items in a page
+         * @param totalPages Requested number of total pages available
+         * @return Empty [Paged] with given pagination info
+         */
+        @JvmStatic
+        fun <A> empty(page: Int, perPage: Int, totalPages: Int): Paged<A> =
+            Paged(emptyList(), page, perPage, totalPages)
     }
 }

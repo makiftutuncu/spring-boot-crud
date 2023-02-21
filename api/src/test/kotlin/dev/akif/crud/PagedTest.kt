@@ -1,5 +1,6 @@
 package dev.akif.crud
 
+import dev.akif.crud.common.Paged
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test

@@ -54,6 +54,10 @@ interface CRUDRepository<I : Serializable, E : CRUDEntity<I, E>> : Repository<E,
      */
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Transactional
-    @Query("UPDATE #{#entityName} e SET e = :entity WHERE e.id = :#{#entity.id} AND e.version = :#{#entity.version}")
+    @Query(
+        """UPDATE #{#entityName} e
+           SET e = :entity, e.version = :#{#entity.version} + 1
+           WHERE e.id = :#{#entity.id} AND e.version = :#{#entity.version}"""
+    )
     fun update(entity: E): Int
 }

@@ -38,9 +38,9 @@ interface CRUDMapper<
     /**
      * Applies updates contained in given update model to given entity
      *
-     * @param updateModel Update model to apply
      * @param entity      Entity to update
+     * @param updateModel Update model to apply
      * @return Updated entity
      */
-    fun updateEntityWith(updateModel: UM, entity: E)
+    fun updateEntityWith(entity: E, updateModel: UM)
 }
