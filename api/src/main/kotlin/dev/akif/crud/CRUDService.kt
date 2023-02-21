@@ -1,6 +1,10 @@
 package dev.akif.crud
 
+import dev.akif.crud.common.InstantProvider
+import dev.akif.crud.common.Paged
 import dev.akif.crud.error.CRUDErrorException
+import dev.akif.crud.error.CRUDErrorException.Companion.alreadyExists
+import dev.akif.crud.error.CRUDErrorException.Companion.notFound
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.core.NestedExceptionUtils
@@ -8,8 +12,6 @@ import org.springframework.data.domain.Pageable
 import org.springframework.transaction.annotation.Transactional
 import java.io.Serializable
 import java.sql.SQLException
-import java.time.Clock
-import java.time.Instant
 import java.util.function.Supplier
 
 /**
@@ -24,10 +26,10 @@ import java.util.function.Supplier
  * @param UM     Update model type of the data which is a [CRUDUpdateModel]
  * @param Mapper Mapper type of the data which is a [CRUDMapper]
  *
- * @property typeName   Type name of the data this service manages
- * @property clock      [Clock] dependency of this service
- * @property repository Repository dependency of this service which is a [CRUDRepository]
- * @property mapper     Mapper dependency of this service which is a [CRUDMapper]
+ * @property typeName        Type name of the data this service manages
+ * @property instantProvider [InstantProvider] dependency of this service
+ * @property repository      Repository dependency of this service which is a [CRUDRepository]
+ * @property mapper          Mapper dependency of this service which is a [CRUDMapper]
  */
 abstract class CRUDService<
         I : Serializable,
@@ -37,7 +39,7 @@ abstract class CRUDService<
         in UM : CRUDUpdateModel,
         out Mapper : CRUDMapper<I, E, M, CM, UM>>(
     protected open val typeName: String,
-    protected open val clock: Clock,
+    protected open val instantProvider: InstantProvider,
     protected open val repository: CRUDRepository<I, E>,
     protected open val mapper: Mapper
 ) {
@@ -50,7 +52,7 @@ abstract class CRUDService<
     @Transactional
     open fun create(createModel: CM): M {
         log.info("Creating new $typeName: $createModel")
-        val entity = mapper.entityToBeCreatedFrom(createModel, Instant.now(clock))
+        val entity = mapper.entityToBeCreatedFrom(createModel, instantProvider.now)
         log.trace("Built ${typeName}Entity: $entity")
         val saved = persist({ repository.save(entity) }, createModel)
         log.trace("Saved ${typeName}Entity: $saved")
@@ -102,17 +104,19 @@ abstract class CRUDService<
     @Transactional
     open fun update(id: I, updateModel: UM): M {
         log.info("Updating $typeName $id: $updateModel")
-        val entity =
-            repository.findByIdAndDeletedAtIsNull(id) ?: throw CRUDErrorException.notFound(typeName, id)
+        val entity = repository.findByIdAndDeletedAtIsNull(id) ?: throw notFound(typeName, id)
         log.trace("Found ${typeName}Entity $id to update: $entity")
-        mapper.updateEntityWith(updateModel, entity)
-        entity.updatedNow(Instant.now(clock))
-        log.trace("Built ${typeName}Entity $id to update: $entity")
         val expectedVersion = entity.version ?: 0
+        entity.apply {
+            mapper.updateEntityWith(this, updateModel)
+            updatedAt = instantProvider.now
+        }
+        log.trace("Built ${typeName}Entity $id to update: $entity")
         persist(
             { assertSingleRowIsAffected(repository.update(entity), expectedVersion) },
             updateModel
         )
+        entity.version = entity.version?.plus(1)
         log.trace("Updated ${typeName}Entity $id: $entity")
         val model = mapper.entityToModel(entity)
         log.trace("Built $typeName $id: $model")
@@ -127,12 +131,15 @@ abstract class CRUDService<
     @Transactional
     open fun delete(id: I) {
         log.info("Deleting $typeName $id")
-        val entity =
-            repository.findByIdAndDeletedAtIsNull(id) ?: throw CRUDErrorException.notFound(typeName, id)
+        val entity = repository.findByIdAndDeletedAtIsNull(id) ?: throw notFound(typeName, id)
         log.trace("Found ${typeName}Entity $id to delete: $entity")
-        entity.markAsDeleted(Instant.now(clock))
-        log.trace("Built ${typeName}Entity $id to delete: $entity")
         val expectedVersion = entity.version ?: 0
+        entity.apply {
+            val now = instantProvider.now
+            updatedAt = now
+            deletedAt = now
+        }
+        log.trace("Built ${typeName}Entity $id to delete: $entity")
         persist(
             { assertSingleRowIsAffected(repository.update(entity), expectedVersion) },
             "with id $id"
@@ -160,7 +167,7 @@ abstract class CRUDService<
                 throw cause
             }
             if (cause is SQLException && cause.message?.contains("duplicate") == true) {
-                throw CRUDErrorException.alreadyExists(typeName, data)
+                throw alreadyExists(typeName, data)
             }
             throw t
         }

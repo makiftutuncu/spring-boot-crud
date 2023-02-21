@@ -1,8 +1,8 @@
 package dev.akif.crud.simpler
 
 import dev.akif.crud.CRUDService
+import dev.akif.crud.common.InstantProvider
 import java.io.Serializable
-import java.time.Clock
 
 /**
  * Simpler variant of [CRUDService] where create/update models are just models
@@ -10,8 +10,8 @@ import java.time.Clock
  * This is meant to be extended from a **@Service** class.
  *
  * @param I      Id type of the data
- * @param M      Model type of the data which is a [SimplerModel]
  * @param E      Entity type of the data which is a [SimplerEntity]
+ * @param M      Model type of the data which is a [SimplerModel]
  * @param Mapper Mapper of the data which is a [SimplerMapper]
  */
 abstract class SimplerService<
@@ -20,7 +20,7 @@ abstract class SimplerService<
         M : SimplerModel<I>,
         out Mapper : SimplerMapper<I, E, M>>(
     override val typeName: String,
-    override val clock: Clock,
+    override val instantProvider: InstantProvider,
     override val repository: SimplerRepository<I, E>,
     override val mapper: Mapper
-) : CRUDService<I, E, M, M, M, Mapper>(typeName, clock, repository, mapper)
+) : CRUDService<I, E, M, M, M, Mapper>(typeName, instantProvider, repository, mapper)

@@ -2,7 +2,6 @@ package dev.akif.crud
 
 import jakarta.persistence.Id
 import jakarta.persistence.MappedSuperclass
-import lombok.ToString
 import java.io.Serializable
 import java.time.Instant
 
@@ -20,7 +19,6 @@ import java.time.Instant
  * deleted entities should be treated as if they don't exist at all
  */
 @MappedSuperclass
-@ToString
 abstract class CRUDEntity<I : Serializable, out E : CRUDEntity<I, E>>(
     @Id open var id: I?,
     open var version: Int?,
@@ -28,23 +26,8 @@ abstract class CRUDEntity<I : Serializable, out E : CRUDEntity<I, E>>(
     open var updatedAt: Instant?,
     open var deletedAt: Instant?
 ) {
-    /**
-     * Marks this entity as updated at given time, also incrementing its version
-     *
-     * @param now Instant at which this entity is updated
-     */
-    fun updatedNow(now: Instant) {
-        version = version?.plus(1)
-        updatedAt = now
-    }
-
-    /**
-     * Marks this entity as deleted at given time, also setting updated at and incrementing its version
-     *
-     * @param now Instant at which this entity is deleted
-     */
-    fun markAsDeleted(now: Instant) {
-        deletedAt = now
-        updatedNow(now)
+    /** @suppress */
+    override fun toString(): String {
+        return "CRUDEntity(id=$id, version=$version, createdAt=$createdAt, updatedAt=$updatedAt, deletedAt=$deletedAt)"
     }
 }

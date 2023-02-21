@@ -1,8 +1,8 @@
 package dev.akif.crud.simplest
 
 import dev.akif.crud.CRUDService
+import dev.akif.crud.common.InstantProvider
 import java.io.Serializable
-import java.time.Clock
 
 /**
  * The simplest variant of [CRUDService] where models are entities directly
@@ -18,7 +18,7 @@ abstract class SimplestService<
         E : SimplestEntity<I, E>,
         out Mapper : SimplestMapper<I, E>>(
     override val typeName: String,
-    override val clock: Clock,
+    override val instantProvider: InstantProvider,
     override val repository: SimplestRepository<I, E>,
     override val mapper: Mapper
-) : CRUDService<I, E, E, E, E, Mapper>(typeName, clock, repository, mapper)
+) : CRUDService<I, E, E, E, E, Mapper>(typeName, instantProvider, repository, mapper)
