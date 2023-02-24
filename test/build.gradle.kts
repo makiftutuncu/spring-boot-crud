@@ -17,6 +17,9 @@ plugins {
 
 val springVersion = "3.0.1"
 val junitVersion = "5.9.2"
+val restAssuredVersion = "5.3.0"
+val testcontainersVersion = "1.17.6"
+var mockServerVersion = "5.15.0"
 
 dependencies {
     implementation(project(":api"))
@@ -24,6 +27,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:$springVersion")
     implementation("org.springframework.boot:spring-boot-starter-test:$springVersion")
     implementation("org.springframework.boot:spring-boot-starter-web:$springVersion")
+    implementation("io.rest-assured:rest-assured:$restAssuredVersion")
+    implementation("org.testcontainers:mysql:$testcontainersVersion")
+    implementation("org.testcontainers:testcontainers:$testcontainersVersion")
+    implementation("org.testcontainers:junit-jupiter:$testcontainersVersion")
+    implementation("org.mock-server:mockserver-netty:$mockServerVersion")
 }
 
 buildscript {

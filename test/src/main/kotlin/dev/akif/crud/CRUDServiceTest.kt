@@ -1,6 +1,5 @@
 package dev.akif.crud
 
-import dev.akif.crud.CRUDTestData.*
 import dev.akif.crud.common.Paged
 import dev.akif.crud.error.CRUDError
 import dev.akif.crud.error.CRUDErrorException
