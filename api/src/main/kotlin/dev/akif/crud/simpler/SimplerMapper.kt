@@ -17,4 +17,8 @@ interface SimplerMapper<
         E : SimplerEntity<I>,
         M : SimplerModel<I>> : CRUDMapper<I, E, M, M, M>, CRUDDTOMapper<I, M, M, M, M, M, M> {
     override fun modelToDTO(model: M): M = model
+
+    override fun createDTOToCreateModel(createDTO: M): M = createDTO
+
+    override fun updateDTOToUpdateModel(updateDTO: M): M = updateDTO
 }
