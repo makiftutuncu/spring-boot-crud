@@ -14,7 +14,7 @@ import java.time.Instant
  */
 interface CRUDMapper<
         I : Serializable,
-        E : CRUDEntity<I, E>,
+        E : CRUDEntity<I>,
         out M : CRUDModel<I>,
         in CM : CRUDCreateModel,
         in UM : CRUDUpdateModel> {

@@ -6,6 +6,10 @@ Base implementations for CRUD API
 
 This is the base package for CRUD implementations with most functionality.
 
+# Package dev.akif.crud.common
+
+Common types among different variants, mostly utilities
+
 # Package dev.akif.crud.error
 
 Error model and error handling

@@ -35,7 +35,7 @@ import java.util.function.Supplier
  */
 abstract class CRUDService<
         I : Serializable,
-        E : CRUDEntity<I, E>,
+        E : CRUDEntity<I>,
         out M : CRUDModel<I>,
         in CM : CRUDCreateModel,
         in UM : CRUDUpdateModel,
@@ -167,8 +167,8 @@ abstract class CRUDService<
      * @return Result of the persisting action
      */
     @Transactional
-    protected open fun <A> persist(action: Supplier<A>, data: Any): A {
-        return try {
+    protected open fun <A> persist(action: Supplier<A>, data: Any): A =
+        try {
             action.get()
         } catch (t: Throwable) {
             val cause = NestedExceptionUtils.getMostSpecificCause(t)
@@ -180,7 +180,6 @@ abstract class CRUDService<
             }
             throw t
         }
-    }
 
     private fun assertSingleRowIsAffected(affected: Int, expected: Int): Int {
         check(affected == 1) { "Cannot update ${typeName}Entity, entity version wasn't $expected!" }

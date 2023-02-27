@@ -15,15 +15,15 @@ plugins {
     signing
 }
 
-val springVersion = "3.0.1"
+val springBootVersion = "3.0.3"
 val junitVersion = "5.9.2"
 
 dependencies {
     implementation(project(":api"))
     implementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa:$springVersion")
-    implementation("org.springframework.boot:spring-boot-starter-test:$springVersion")
-    implementation("org.springframework.boot:spring-boot-starter-web:$springVersion")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa:$springBootVersion")
+    implementation("org.springframework.boot:spring-boot-starter-test:$springBootVersion")
+    implementation("org.springframework.boot:spring-boot-starter-web:$springBootVersion")
 }
 
 buildscript {

@@ -43,7 +43,7 @@ import java.io.Serializable
 @Validated
 abstract class CRUDController<
         I : Serializable,
-        E : CRUDEntity<I, E>,
+        E : CRUDEntity<I>,
         M : CRUDModel<I>,
         out D : CRUDDTO<I>,
         CM : CRUDCreateModel,

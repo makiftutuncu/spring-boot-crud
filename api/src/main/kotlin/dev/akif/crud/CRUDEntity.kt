@@ -9,7 +9,6 @@ import java.time.Instant
  * Base entity of a data model representing its persisted structure
  *
  * @param I Id type of the data
- * @param E Entity type which is a [CRUDEntity], meant to be the exact type extending this class
  *
  * @property id        Identifier of this entity
  * @property version   Version of this entity used in optimistic locking during persistence
@@ -19,15 +18,14 @@ import java.time.Instant
  * deleted entities should be treated as if they don't exist at all
  */
 @MappedSuperclass
-abstract class CRUDEntity<I : Serializable, out E : CRUDEntity<I, E>>(
-    @Id open var id: I?,
-    open var version: Int?,
-    open var createdAt: Instant?,
-    open var updatedAt: Instant?,
-    open var deletedAt: Instant?
+abstract class CRUDEntity<I : Serializable>(
+    @Id open var id: I? = null,
+    open var version: Int? = null,
+    open var createdAt: Instant? = null,
+    open var updatedAt: Instant? = null,
+    open var deletedAt: Instant? = null
 ) {
     /** @suppress */
-    override fun toString(): String {
-        return "CRUDEntity(id=$id, version=$version, createdAt=$createdAt, updatedAt=$updatedAt, deletedAt=$deletedAt)"
-    }
+    override fun toString(): String =
+        "CRUDEntity(id=$id, version=$version, createdAt=$createdAt, updatedAt=$updatedAt, deletedAt=$deletedAt)"
 }

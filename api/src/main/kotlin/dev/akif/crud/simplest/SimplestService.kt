@@ -17,7 +17,7 @@ import java.io.Serializable
  */
 abstract class SimplestService<
         I : Serializable,
-        E : SimplestEntity<I, E>,
+        E : SimplestEntity<I>,
         out R : SimplestRepository<I, E>,
         out Mapper : SimplestMapper<I, E>>(
     override val typeName: String,

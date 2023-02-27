@@ -29,7 +29,7 @@ import java.io.Serializable
  */
 abstract class CRUDServiceTest<
         I : Serializable,
-        E : CRUDEntity<I, E>,
+        E : CRUDEntity<I>,
         M : CRUDModel<I>,
         CM : CRUDCreateModel,
         UM : CRUDUpdateModel,

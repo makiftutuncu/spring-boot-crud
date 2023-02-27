@@ -11,13 +11,9 @@ import java.io.Serializable
  * @param I Id type of the data
  * @param E Entity type of the data which is a [SimplestEntity]
  */
-interface SimplestMapper<I : Serializable, E : SimplestEntity<I, E>> : CRUDMapper<I, E, E, E, E>,
+interface SimplestMapper<I : Serializable, E : SimplestEntity<I>> : CRUDMapper<I, E, E, E, E>,
     CRUDDTOMapper<I, E, E, E, E, E, E> {
-    override fun modelToDTO(model: E): E {
-        return model
-    }
+    override fun modelToDTO(model: E): E = model
 
-    override fun entityToModel(entity: E): E {
-        return entity
-    }
+    override fun entityToModel(entity: E): E = entity
 }
