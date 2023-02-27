@@ -19,16 +19,18 @@ import java.util.function.Supplier
  *
  * This is meant to be extended from a **@Service** class.
  *
- * @param I      Id type of the data
- * @param M      Model type of the data which is a [CRUDModel]
- * @param E      Entity type of the data which is a [CRUDEntity]
- * @param CM     Create model type of the data which is a [CRUDCreateModel]
- * @param UM     Update model type of the data which is a [CRUDUpdateModel]
- * @param Mapper Mapper type of the data which is a [CRUDMapper]
+ * @param I              Id type of the data
+ * @param M              Model type of the data which is a [CRUDModel]
+ * @param E              Entity type of the data which is a [CRUDEntity]
+ * @param CM             Create model type of the data which is a [CRUDCreateModel]
+ * @param UM             Update model type of the data which is a [CRUDUpdateModel]
+ * @param R              Repository type of the data which is a [CRUDRepository]
+ * @param Mapper         Mapper type of the data which is a [CRUDMapper]
+ * @param crudRepository Repository dependency of this service which is a [CRUDRepository] as a base type,
+ * private by choice because there is [repository] to access it with the more specific type instead of the base type
  *
  * @property typeName        Type name of the data this service manages
  * @property instantProvider [InstantProvider] dependency of this service
- * @property repository      Repository dependency of this service which is a [CRUDRepository]
  * @property mapper          Mapper dependency of this service which is a [CRUDMapper]
  */
 abstract class CRUDService<
@@ -37,12 +39,19 @@ abstract class CRUDService<
         out M : CRUDModel<I>,
         in CM : CRUDCreateModel,
         in UM : CRUDUpdateModel,
+        out R : CRUDRepository<I, E>,
         out Mapper : CRUDMapper<I, E, M, CM, UM>>(
     protected open val typeName: String,
     protected open val instantProvider: InstantProvider,
-    protected open val repository: CRUDRepository<I, E>,
+    crudRepository: CRUDRepository<I, E>,
     protected open val mapper: Mapper
 ) {
+    /**
+     * Repository dependency of this service as a more specific type
+     */
+    @Suppress("UNCHECKED_CAST")
+    protected val repository: R = crudRepository as R
+
     /**
      * Default implementation for creating a new entity from given create model
      *

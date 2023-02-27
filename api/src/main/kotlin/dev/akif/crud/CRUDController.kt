@@ -33,6 +33,7 @@ import java.io.Serializable
  * @param UD        Update DTO type of the data which is a [CRUDUpdateDTO]
  * @param Mapper    Mapper type of the data which is a [CRUDMapper]
  * @param DTOMapper DTO mapper type of the data which is a [CRUDDTOMapper]
+ * @param R         Repository type of the data which is a [CRUDRepository]
  * @param S         Service type of the data which is a [CRUDService]
  *
  * @property typeName Type name of the data this controller manages
@@ -51,7 +52,8 @@ abstract class CRUDController<
         in UD : CRUDUpdateDTO,
         out Mapper : CRUDMapper<I, E, M, CM, UM>,
         out DTOMapper : CRUDDTOMapper<I, M, D, CM, UM, CD, UD>,
-        out S : CRUDService<I, E, M, CM, UM, Mapper>>(
+        out R : CRUDRepository<I, E>,
+        out S : CRUDService<I, E, M, CM, UM, R, Mapper>>(
     protected open val typeName: String,
     protected open val service: S,
     protected open val mapper: DTOMapper

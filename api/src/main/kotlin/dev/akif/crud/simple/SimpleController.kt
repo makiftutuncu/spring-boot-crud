@@ -1,6 +1,7 @@
 package dev.akif.crud.simple
 
 import dev.akif.crud.CRUDController
+import dev.akif.crud.CRUDRepository
 import java.io.Serializable
 
 /**
@@ -15,6 +16,7 @@ import java.io.Serializable
  * @param M      Model type of the data which is a [SimpleModel]
  * @param D      DTO type of the data which is a [SimpleDTO]
  * @param Mapper Mapper type of the data which is a [SimpleMapper]
+ * @param R      Repository type of the data which is a [SimpleRepository]
  * @param S      Service type of the data which is a [SimpleService]
  */
 abstract class SimpleController<
@@ -23,8 +25,9 @@ abstract class SimpleController<
         M : SimpleModel<I>,
         D : SimpleDTO<I>,
         out Mapper : SimpleMapper<I, E, M, D>,
-        out S : SimpleService<I, E, M, D, Mapper>>(
+        out R : SimpleRepository<I, E>,
+        out S : SimpleService<I, E, M, D, R, Mapper>>(
     override val typeName: String,
     override val service: S,
     override val mapper: Mapper
-) : CRUDController<I, E, M, D, M, M, D, D, Mapper, Mapper, S>(typeName, service, mapper)
+) : CRUDController<I, E, M, D, M, M, D, D, Mapper, Mapper, R, S>(typeName, service, mapper)

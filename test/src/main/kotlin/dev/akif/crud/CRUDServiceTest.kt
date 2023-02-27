@@ -19,8 +19,9 @@ import java.io.Serializable
  * @param CM       Create model type of the data which is a [CRUDCreateModel]
  * @param UM       Update model type of the data which is a [CRUDUpdateModel]
  * @param Mapper   Mapper type of the data which is a [CRUDMapper]
- * @param TestData Test data type of the data which is a [CRUDTestData]
+ * @param R        Repository type of the data which is a [CRUDRepository]
  * @param S        Service type of the data which is a [CRUDService]
+ * @param TestData Test data type of the data which is a [CRUDTestData]
  *
  * @property typeName Type name of the data
  * @property mapper   Mapper dependency of this test which is a [CRUDMapper]
@@ -33,7 +34,8 @@ abstract class CRUDServiceTest<
         CM : CRUDCreateModel,
         UM : CRUDUpdateModel,
         Mapper : CRUDMapper<I, E, M, CM, UM>,
-        S : CRUDService<I, E, M, CM, UM, Mapper>,
+        R : CRUDRepository<I, E>,
+        S : CRUDService<I, E, M, CM, UM, R, Mapper>,
         TestData : CRUDTestData<I, E, M, CM, UM>>(
     protected val typeName: String,
     protected val mapper: Mapper,
@@ -46,7 +48,7 @@ abstract class CRUDServiceTest<
      *
      * @see [BeforeEach]
      */
-    protected lateinit var repository: InMemoryCRUDRepository<I, E, CM, TestData>
+    protected lateinit var repository: CRUDRepository<I, E>
 
     /**
      * Instance of the service to be tested
@@ -65,6 +67,11 @@ abstract class CRUDServiceTest<
      * @return Instance of the service to be tested, built using given test dependencies
      */
     protected abstract fun buildService(repository: CRUDRepository<I, E>, mapper: Mapper): S
+
+    @Suppress("UNCHECKED_CAST")
+    protected val inMemoryRepository: InMemoryCRUDRepository<I, E, CM, TestData> by lazy {
+        repository as InMemoryCRUDRepository<I, E, CM, TestData>
+    }
 
     /** @suppress */
     @BeforeEach
@@ -95,7 +102,7 @@ abstract class CRUDServiceTest<
         @DisplayName("should create a new entity and return it")
         @Test
         fun testCreate() {
-            repository.clear()
+            inMemoryRepository.clear()
             val createModel = testData.entityToCreateModel(testData.testEntity1)
 
             val actual = service.create(createModel)
@@ -183,7 +190,7 @@ abstract class CRUDServiceTest<
         @DisplayName("should return empty page when no entities exist")
         @Test
         fun testGetAllWithNoEntities() {
-            repository.clear()
+            inMemoryRepository.clear()
 
             val actual = service.getAll(PageRequest.of(0, 20))
             val expected = Paged.empty<M>(page = 0, perPage = 20, totalPages = 0)
@@ -353,7 +360,7 @@ abstract class CRUDServiceTest<
 
             assertNull(repository.findByIdAndDeletedAtIsNull(testData.testEntity1.id!!))
 
-            val actual = repository.entities[testData.testEntity1.id!!]?.let(mapper::entityToModel)
+            val actual = inMemoryRepository.entities[testData.testEntity1.id!!]?.let(mapper::entityToModel)
             val expected = mapper.entityToModel(
                 testData.copy(testData.testEntity1).apply {
                     version = version?.plus(1)
