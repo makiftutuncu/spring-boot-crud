@@ -13,6 +13,7 @@ import java.io.Serializable
  * @param E      Entity type of the data which is a [SimplerEntity]
  * @param M      Model type of the data which is a [SimplerModel]
  * @param Mapper Mapper type of the data which is a [SimplerMapper]
+ * @param R      Repository type of the data which is a [SimplerRepository]
  * @param S      Service type of the data which is a [SimplerService]
  */
 abstract class SimplerController<
@@ -20,8 +21,9 @@ abstract class SimplerController<
         E : SimplerEntity<I, E>,
         M : SimplerModel<I>,
         out Mapper : SimplerMapper<I, E, M>,
-        out S : SimplerService<I, E, M, Mapper>>(
+        out R : SimplerRepository<I, E>,
+        out S : SimplerService<I, E, M, R, Mapper>>(
     override val typeName: String,
     override val service: S,
     override val mapper: Mapper
-) : CRUDController<I, E, M, M, M, M, M, M, Mapper, Mapper, S>(typeName, service, mapper)
+) : CRUDController<I, E, M, M, M, M, M, M, Mapper, Mapper, R, S>(typeName, service, mapper)

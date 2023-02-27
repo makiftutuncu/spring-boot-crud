@@ -15,14 +15,16 @@ import java.io.Serializable
  * @param I      Id type of the data
  * @param E      Entity type of the data which is a [SimplestEntity]
  * @param Mapper Mapper type of the data which is a [SimplestMapper]
+ * @param R      Repository type of the data which is a [SimplestRepository]
  * @param S      Service type of the data which is a [SimplestService]
  */
 abstract class SimplestController<
         I : Serializable,
         E : SimplestEntity<I, E>,
         out Mapper : SimplestMapper<I, E>,
-        out S : SimplestService<I, E, Mapper>>(
+        out R : SimplestRepository<I, E>,
+        out S : SimplestService<I, E, R, Mapper>>(
     override val typeName: String,
     override val service: S,
     override val mapper: Mapper
-) : CRUDController<I, E, E, E, E, E, E, E, Mapper, Mapper, S>(typeName, service, mapper)
+) : CRUDController<I, E, E, E, E, E, E, E, Mapper, Mapper, R, S>(typeName, service, mapper)
