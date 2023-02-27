@@ -19,7 +19,7 @@ import java.util.*
  * @param E Entity type of the data which is a [CRUDEntity]
  */
 @NoRepositoryBean
-interface CRUDRepository<I : Serializable, E : CRUDEntity<I, E>> : Repository<E, I> {
+interface CRUDRepository<I : Serializable, E : CRUDEntity<I>> : Repository<E, I> {
     /**
      * Finds all entities for given pagination and deletion flag
      *

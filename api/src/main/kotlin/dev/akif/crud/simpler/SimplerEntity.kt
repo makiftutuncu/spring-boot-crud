@@ -8,12 +8,11 @@ import java.time.Instant
  * Simpler variant of [CRUDEntity]
  *
  * @param I Id type of the data
- * @param E Entity type which is a [SimplerEntity], meant to be the exact type extending this class
  */
-abstract class SimplerEntity<I : Serializable, E : SimplerEntity<I, E>>(
-    override var id: I?,
-    override var version: Int?,
-    override var createdAt: Instant?,
-    override var updatedAt: Instant?,
-    override var deletedAt: Instant?
-) : CRUDEntity<I, E>(id, version, createdAt, updatedAt, deletedAt)
+abstract class SimplerEntity<I : Serializable>(
+    override var id: I? = null,
+    override var version: Int? = null,
+    override var createdAt: Instant? = null,
+    override var updatedAt: Instant? = null,
+    override var deletedAt: Instant? = null,
+) : CRUDEntity<I>(id, version, createdAt, updatedAt, deletedAt)

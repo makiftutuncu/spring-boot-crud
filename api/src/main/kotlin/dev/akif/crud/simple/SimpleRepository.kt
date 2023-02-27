@@ -11,4 +11,4 @@ import java.io.Serializable
  * @param I Id type of the data
  * @param E Entity type of the data which is a [SimpleEntity]
  */
-interface SimpleRepository<I : Serializable, E : SimpleEntity<I, E>> : CRUDRepository<I, E>
+interface SimpleRepository<I : Serializable, E : SimpleEntity<I>> : CRUDRepository<I, E>

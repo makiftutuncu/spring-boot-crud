@@ -20,11 +20,8 @@ data class CRUDErrorException(val error: CRUDError) : RuntimeException(error.toS
          * @return [CRUDErrorException] containing [CRUDError] built from given data
          */
         @JvmStatic
-        fun alreadyExists(what: String, data: Any): CRUDErrorException {
-            return CRUDErrorException(
-                CRUDError(HttpStatus.CONFLICT, "$what with $data already exists.")
-            )
-        }
+        fun alreadyExists(what: String, data: Any): CRUDErrorException =
+            CRUDErrorException(CRUDError(HttpStatus.CONFLICT, "$what with $data already exists."))
 
         /**
          * Builds a "not found" error as a [CRUDErrorException] with "404 Not Found" HTTP status for given id
@@ -34,10 +31,7 @@ data class CRUDErrorException(val error: CRUDError) : RuntimeException(error.toS
          * @return [CRUDErrorException] containing [CRUDError] built from given data
          */
         @JvmStatic
-        fun notFound(what: String, id: Any): CRUDErrorException {
-            return CRUDErrorException(
-                CRUDError(HttpStatus.NOT_FOUND, "$what with id $id is not found.")
-            )
-        }
+        fun notFound(what: String, id: Any): CRUDErrorException =
+            CRUDErrorException(CRUDError(HttpStatus.NOT_FOUND, "$what with id $id is not found."))
     }
 }

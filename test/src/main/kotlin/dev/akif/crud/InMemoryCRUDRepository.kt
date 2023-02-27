@@ -19,7 +19,7 @@ import java.io.Serializable
  */
 class InMemoryCRUDRepository<
         I : Serializable,
-        E : CRUDEntity<I, E>,
+        E : CRUDEntity<I>,
         CM : CRUDCreateModel,
         out TestData : CRUDTestData<I, E, *, CM, *>>(
     private val typeName: String,

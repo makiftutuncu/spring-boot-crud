@@ -19,7 +19,7 @@ import java.io.Serializable
  */
 abstract class SimpleService<
         I : Serializable,
-        E : SimpleEntity<I, E>,
+        E : SimpleEntity<I>,
         M : SimpleModel<I>,
         D : SimpleDTO<I>,
         out R : SimpleRepository<I, E>,

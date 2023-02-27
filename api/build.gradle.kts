@@ -14,25 +14,20 @@ plugins {
     signing
 }
 
-val lombokVersion = "1.18.24"
-val springVersion = "3.0.1"
+val springBootVersion = "3.0.3"
 val springdocVersion = "2.0.2"
 val junitVersion = "5.9.2"
 val mockitoJUnitVersion = "5.0.0"
 
 dependencies {
-    annotationProcessor("org.projectlombok:lombok:$lombokVersion")
-    compileOnly("org.projectlombok:lombok:$lombokVersion")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa:$springVersion")
-    implementation("org.springframework.boot:spring-boot-starter-validation:$springVersion")
-    implementation("org.springframework.boot:spring-boot-starter-web:$springVersion")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa:$springBootVersion")
+    implementation("org.springframework.boot:spring-boot-starter-validation:$springBootVersion")
+    implementation("org.springframework.boot:spring-boot-starter-web:$springBootVersion")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springdocVersion")
 
-    testAnnotationProcessor("org.projectlombok:lombok:$lombokVersion")
-    testCompileOnly("org.projectlombok:lombok:$lombokVersion")
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
     testImplementation("org.mockito:mockito-junit-jupiter:$mockitoJUnitVersion")
-    testImplementation("org.springframework.boot:spring-boot-starter-test:$springVersion")
+    testImplementation("org.springframework.boot:spring-boot-starter-test:$springBootVersion")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 }
 

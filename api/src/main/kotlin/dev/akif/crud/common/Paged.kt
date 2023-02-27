@@ -38,14 +38,13 @@ data class Paged<out A>(
      * @param mapper Conversion function
      * @return New [Paged] containing converted items
      */
-    fun <B> map(mapper: (A) -> B): Paged<B> {
-        return Paged(
+    fun <B> map(mapper: (A) -> B): Paged<B> =
+        Paged(
             data.map(mapper),
             page,
             perPage,
             totalPages
         )
-    }
 
     /** @suppress */
     companion object {

@@ -18,7 +18,7 @@ import java.io.Serializable
  */
 abstract class SimplerController<
         I : Serializable,
-        E : SimplerEntity<I, E>,
+        E : SimplerEntity<I>,
         M : SimplerModel<I>,
         out Mapper : SimplerMapper<I, E, M>,
         out R : SimplerRepository<I, E>,

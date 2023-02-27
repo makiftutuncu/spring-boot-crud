@@ -15,6 +15,6 @@ import java.io.Serializable
  */
 interface SimpleMapper<
         I : Serializable,
-        E : SimpleEntity<I, E>,
+        E : SimpleEntity<I>,
         M : SimpleModel<I>,
         D : SimpleDTO<I>> : CRUDMapper<I, E, M, M, M>, CRUDDTOMapper<I, M, D, M, M, D, D>

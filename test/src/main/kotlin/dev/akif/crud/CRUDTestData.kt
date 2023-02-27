@@ -12,7 +12,7 @@ import java.time.Instant
  * @param CM Create model type of the data which is a [CRUDCreateModel]
  * @param UM Update model type of the data which is a [CRUDUpdateModel]
  */
-abstract class CRUDTestData<I : Serializable, E : CRUDEntity<I, E>, M : CRUDModel<I>, CM : CRUDCreateModel, UM : CRUDUpdateModel> {
+abstract class CRUDTestData<I : Serializable, E : CRUDEntity<I>, M : CRUDModel<I>, CM : CRUDCreateModel, UM : CRUDUpdateModel> {
     /**
      * First test entity
      */

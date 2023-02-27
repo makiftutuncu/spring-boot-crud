@@ -21,7 +21,7 @@ import java.io.Serializable
  */
 abstract class SimpleController<
         I : Serializable,
-        E : SimpleEntity<I, E>,
+        E : SimpleEntity<I>,
         M : SimpleModel<I>,
         D : SimpleDTO<I>,
         out Mapper : SimpleMapper<I, E, M, D>,

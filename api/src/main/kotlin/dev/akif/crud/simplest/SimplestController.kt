@@ -20,7 +20,7 @@ import java.io.Serializable
  */
 abstract class SimplestController<
         I : Serializable,
-        E : SimplestEntity<I, E>,
+        E : SimplestEntity<I>,
         out Mapper : SimplestMapper<I, E>,
         out R : SimplestRepository<I, E>,
         out S : SimplestService<I, E, R, Mapper>>(
