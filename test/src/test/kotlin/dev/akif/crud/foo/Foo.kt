@@ -13,7 +13,7 @@ import jakarta.persistence.Entity as JakartaEntity
 import dev.akif.crud.CRUDTestData
 import java.util.UUID
 
-class FooTestData : CRUDTestData<UUID, FooEntity, Foo, CreateFoo, UpdateFoo>() {
+class FooTestData : CRUDTestData<UUID, FooEntity, Foo, CreateFoo, UpdateFoo, FooTestData>(typeName = "Foo") {
     private val fooId1 = UUID.randomUUID()
     private val fooId2 = UUID.randomUUID()
     private val fooId3 = UUID.randomUUID()

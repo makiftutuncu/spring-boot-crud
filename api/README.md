@@ -11,14 +11,14 @@ For Gradle with Kotlin DSL, add following to `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-  implementation('dev.akif:spring-boot-crud-api:0.3.3')
+  implementation('dev.akif:spring-boot-crud-api:0.3.4')
 }
 ```
 For Gradle, add following to `build.gradle`:
 
 ```kotlin
 dependencies {
-  implementation 'dev.akif:spring-boot-crud-api:0.3.3'
+  implementation 'dev.akif:spring-boot-crud-api:0.3.4'
 }
 ```
 For Maven, add following to your `pom.xml`:
@@ -28,7 +28,7 @@ For Maven, add following to your `pom.xml`:
   <dependency>
     <groupId>dev.akif</groupId>
     <artifactId>spring-boot-crud-api</artifactId>
-    <version>0.3.3</version>
+    <version>0.3.4</version>
   </dependency>
 </dependencies>
 ```

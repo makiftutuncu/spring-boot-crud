@@ -36,49 +36,33 @@ abstract class CRUDServiceTest<
         Mapper : CRUDMapper<I, E, M, CM, UM>,
         R : CRUDRepository<I, E>,
         S : CRUDService<I, E, M, CM, UM, R, Mapper>,
-        TestData : CRUDTestData<I, E, M, CM, UM>>(
+        TestData : CRUDTestData<I, E, M, CM, UM, TestData>>(
     protected val typeName: String,
     protected val mapper: Mapper,
     protected val testData: TestData
 ) {
     /**
-     * Instance of a [InMemoryCRUDRepository] containing test entities
+     * Build a concrete instance of the service to be tested using given test dependencies
      *
-     * This will be built for each test method.
-     *
-     * @see [BeforeEach]
+     * @param mapper   Instance of a [Mapper] as a dependency
+     * @param testData Instance of a [CRUDTestData] as a dependency
+     * @return Instance of the service to be tested, built using given test dependencies
      */
-    protected lateinit var repository: CRUDRepository<I, E>
+    protected abstract fun buildService(mapper: Mapper, testData: TestData): S
 
     /**
-     * Instance of the service to be tested
-     *
-     * This will be built for each test method.
+     * Instance of the service to be tested, this will be reset for each test method.
      *
      * @see [BeforeEach]
      */
     protected lateinit var service: S
 
-    /**
-     * Build a concrete instance of the service to be tested using given test dependencies
-     *
-     * @param repository [InMemoryCRUDRepository] that's already built with test entities
-     * @param mapper     Instance of a [Mapper] as a dependency
-     * @return Instance of the service to be tested, built using given test dependencies
-     */
-    protected abstract fun buildService(repository: CRUDRepository<I, E>, mapper: Mapper): S
-
-    @Suppress("UNCHECKED_CAST")
-    protected val inMemoryRepository: InMemoryCRUDRepository<I, E, CM, TestData> by lazy {
-        repository as InMemoryCRUDRepository<I, E, CM, TestData>
-    }
-
     /** @suppress */
     @BeforeEach
     fun setUp() {
+        testData.repository.reset()
         testData.instantProvider.reset()
-        repository = InMemoryCRUDRepository(typeName, testData)
-        service = buildService(repository, mapper)
+        service = buildService(mapper, testData)
     }
 
     /** @suppress */
@@ -102,7 +86,7 @@ abstract class CRUDServiceTest<
         @DisplayName("should create a new entity and return it")
         @Test
         fun testCreate() {
-            inMemoryRepository.clear()
+            testData.repository.clear()
             val createModel = testData.entityToCreateModel(testData.testEntity1)
 
             val actual = service.create(createModel)
@@ -110,7 +94,7 @@ abstract class CRUDServiceTest<
 
             assertEquals(expected, actual)
 
-            val foundEntity = repository.findByIdAndDeletedAtIsNull(actual.id())?.let(mapper::entityToModel)
+            val foundEntity = testData.repository.findByIdAndDeletedAtIsNull(actual.id())?.let(mapper::entityToModel)
 
             assertEquals(expected, foundEntity)
         }
@@ -119,7 +103,7 @@ abstract class CRUDServiceTest<
         @DisplayName("should create a new entity with the same data of a deleted entity and return it")
         @Test
         fun testCreateAgain() {
-            repository.update(testData.copy(testData.testEntity1).apply { deletedAt = testData.now })
+            testData.repository.update(testData.copy(testData.testEntity1).apply { deletedAt = testData.now })
             val createModel = testData.entityToCreateModel(testData.testEntity1)
 
             val actual = service.create(createModel)
@@ -127,7 +111,7 @@ abstract class CRUDServiceTest<
 
             assertEquals(expected, actual)
 
-            val foundEntity = repository.findByIdAndDeletedAtIsNull(actual.id())?.let(mapper::entityToModel)
+            val foundEntity = testData.repository.findByIdAndDeletedAtIsNull(actual.id())?.let(mapper::entityToModel)
 
             assertEquals(expected, foundEntity)
             assertNotEquals(testData.testEntity1, foundEntity)
@@ -190,7 +174,7 @@ abstract class CRUDServiceTest<
         @DisplayName("should return empty page when no entities exist")
         @Test
         fun testGetAllWithNoEntities() {
-            inMemoryRepository.clear()
+            testData.repository.clear()
 
             val actual = service.getAll(PageRequest.of(0, 20))
             val expected = Paged.empty<M>(page = 0, perPage = 20, totalPages = 0)
@@ -201,7 +185,7 @@ abstract class CRUDServiceTest<
         @DisplayName("should not return deleted entities")
         @Test
         fun testGetAllWithNoDeletedEntities() {
-            repository.update(testData.copy(testData.testEntity3).apply { deletedAt = testData.now })
+            testData.repository.update(testData.copy(testData.testEntity3).apply { deletedAt = testData.now })
             val testCases: List<Pair<PageRequest, Paged<M>>> = listOf(
                 PageRequest.of(0, 1) to Paged(
                     data = listOf(
@@ -251,7 +235,7 @@ abstract class CRUDServiceTest<
         @DisplayName("should return null when trying to get a deleted entity")
         @Test
         fun testGetDeletedNotFound() {
-            repository.update(testData.copy(testData.testEntity1).apply { deletedAt = testData.now })
+            testData.repository.update(testData.copy(testData.testEntity1).apply { deletedAt = testData.now })
             assertNull(service.get(testData.testEntity1.id!!))
         }
     }
@@ -276,6 +260,7 @@ abstract class CRUDServiceTest<
         @DisplayName("should fail with already exists error when trying to update an entity as duplicate of another entity")
         @Test
         fun testUpdateAlreadyExists() {
+            testData.repository.entities[testData.testEntity2.id!!] = testData.copy(testData.testEntity1).apply { id = testData.testEntity2.id }
             val updateModel = testData.entityToUpdateModelWithNoModifications(testData.testEntity1)
             val exception =
                 assertThrows(CRUDErrorException::class.java) { service.update(testData.testEntity2.id!!, updateModel) }
@@ -304,7 +289,7 @@ abstract class CRUDServiceTest<
 
             assertEquals(expected, actual)
 
-            val foundEntity = repository.findByIdAndDeletedAtIsNull(actual.id())?.let(mapper::entityToModel)
+            val foundEntity = testData.repository.findByIdAndDeletedAtIsNull(actual.id())?.let(mapper::entityToModel)
 
             assertEquals(expected, foundEntity)
         }
@@ -312,7 +297,7 @@ abstract class CRUDServiceTest<
         @DisplayName("should update with the same data of a deleted entity return updated entity")
         @Test
         fun testUpdateDeleted() {
-            repository.update(testData.copy(testData.testEntity2).apply { deletedAt = testData.now })
+            testData.repository.update(testData.copy(testData.testEntity2).apply { deletedAt = testData.now })
             val updateModel = testData.entityToUpdateModelWithNoModifications(testData.testEntity2)
             val oneSecondLater = testData.now.plusSeconds(1)
             testData.instantProvider.adjust { it.plusSeconds(1) }
@@ -328,7 +313,7 @@ abstract class CRUDServiceTest<
 
             assertEquals(expected, actual)
 
-            val foundEntity = repository.findByIdAndDeletedAtIsNull(actual.id())?.let(mapper::entityToModel)
+            val foundEntity = testData.repository.findByIdAndDeletedAtIsNull(actual.id())?.let(mapper::entityToModel)
 
             assertEquals(expected, foundEntity)
         }
@@ -358,9 +343,9 @@ abstract class CRUDServiceTest<
 
             service.delete(testData.testEntity1.id!!)
 
-            assertNull(repository.findByIdAndDeletedAtIsNull(testData.testEntity1.id!!))
+            assertNull(testData.repository.findByIdAndDeletedAtIsNull(testData.testEntity1.id!!))
 
-            val actual = inMemoryRepository.entities[testData.testEntity1.id!!]?.let(mapper::entityToModel)
+            val actual = testData.repository.entities[testData.testEntity1.id!!]?.let(mapper::entityToModel)
             val expected = mapper.entityToModel(
                 testData.copy(testData.testEntity1).apply {
                     version = version?.plus(1)
