@@ -1,6 +1,5 @@
 package dev.akif.crud.foo
 
-import dev.akif.crud.CRUDRepository
 import dev.akif.crud.CRUDServiceTest
 import org.junit.jupiter.api.DisplayName
 import java.util.UUID
@@ -11,6 +10,6 @@ class FooServiceTest: CRUDServiceTest<UUID, FooEntity, Foo, CreateFoo, UpdateFoo
     mapper = FooMapper(),
     testData = FooTestData()
 ) {
-    override fun buildService(repository: CRUDRepository<UUID, FooEntity>, mapper: FooMapper): FooService =
-        FooService(testData.instantProvider, repository, mapper)
+    override fun buildService(mapper: FooMapper, testData: FooTestData): FooService =
+        FooService(testData.instantProvider, testData.repository, mapper)
 }

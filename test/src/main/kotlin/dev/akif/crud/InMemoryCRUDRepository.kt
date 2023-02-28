@@ -21,7 +21,7 @@ class InMemoryCRUDRepository<
         I : Serializable,
         E : CRUDEntity<I>,
         CM : CRUDCreateModel,
-        out TestData : CRUDTestData<I, E, *, CM, *>>(
+        TestData : CRUDTestData<I, E, *, CM, *, TestData>>(
     private val typeName: String,
     private val testData: TestData
 ) : CRUDRepository<I, E> {
@@ -31,10 +31,7 @@ class InMemoryCRUDRepository<
     val entities: MutableMap<I, E> = mutableMapOf()
 
     init {
-        testData.testEntity1.apply { entities[id!!] = this }
-        testData.testEntity2.apply { entities[id!!] = this }
-        testData.testEntity3.apply { entities[id!!] = this }
-        testData.moreTestEntities.forEach { it.apply { entities[id!!] = this } }
+        reset()
     }
 
     override fun findAllByDeletedAtIsNull(pageable: Pageable): Page<E> =
@@ -72,10 +69,21 @@ class InMemoryCRUDRepository<
     }
 
     /**
-     * Clears the repository for testing
+     * Clears the repository for testing, there will be no entities left after this.
      */
     fun clear() {
         entities.clear()
+    }
+
+    /**
+     * Reset the repository for testing, there will be the initial entities after this.
+     */
+    fun reset() {
+        entities.clear()
+        testData.testEntity1.apply { entities[id!!] = this }
+        testData.testEntity2.apply { entities[id!!] = this }
+        testData.testEntity3.apply { entities[id!!] = this }
+        testData.moreTestEntities.forEach { it.apply { entities[id!!] = this } }
     }
 
     private fun handleDuplicates(entity: E, data: Any) {

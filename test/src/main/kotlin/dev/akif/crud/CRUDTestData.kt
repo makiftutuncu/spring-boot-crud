@@ -11,8 +11,34 @@ import java.time.Instant
  * @param E  Entity type of the data which is a [CRUDEntity]
  * @param CM Create model type of the data which is a [CRUDCreateModel]
  * @param UM Update model type of the data which is a [CRUDUpdateModel]
+ * @param TestData Test data type of the data which is a [CRUDTestData], meant to be the concrete type that extends this class
+ * @param typeName Type name of the data
  */
-abstract class CRUDTestData<I : Serializable, E : CRUDEntity<I>, M : CRUDModel<I>, CM : CRUDCreateModel, UM : CRUDUpdateModel> {
+abstract class CRUDTestData<
+        I : Serializable,
+        E : CRUDEntity<I>,
+        M : CRUDModel<I>,
+        CM : CRUDCreateModel,
+        UM : CRUDUpdateModel,
+        TestData : CRUDTestData<I, E, M, CM, UM, TestData>>(typeName: String) {
+    /**
+     * Instance of a [InMemoryCRUDRepository] containing test entities
+     */
+    @Suppress("UNCHECKED_CAST")
+    val repository: InMemoryCRUDRepository<I, E, CM, TestData> by lazy {
+        InMemoryCRUDRepository(typeName, this as TestData)
+    }
+
+    /**
+     * Instant provider to use in tests
+     */
+    val instantProvider: AdjustableInstantProvider = AdjustableInstantProvider()
+
+    /**
+     * Now instant to use in tests
+     */
+    val now: Instant = instantProvider.now
+
     /**
      * First test entity
      */
@@ -80,14 +106,4 @@ abstract class CRUDTestData<I : Serializable, E : CRUDEntity<I>, M : CRUDModel<I
      * @return Update model built from given entity with some modifications
      */
     abstract fun entityToUpdateModelWithModifications(entity: E): UM
-
-    /**
-     * Instant provider to use in tests
-     */
-    val instantProvider: AdjustableInstantProvider = AdjustableInstantProvider()
-
-    /**
-     * Now instant to use in tests
-     */
-    val now: Instant = instantProvider.now
 }
