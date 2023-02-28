@@ -10,7 +10,7 @@ For Gradle with Kotlin DSL, add following to `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-  testImplementation('dev.akif:spring-boot-crud-test:0.3.4')
+  testImplementation('dev.akif:spring-boot-crud-test:0.4.0')
 }
 ```
 
@@ -18,7 +18,7 @@ For Gradle, add following to `build.gradle`:
 
 ```kotlin
 dependencies {
-  testImplementation 'dev.akif:spring-boot-crud-test:0.3.4'
+  testImplementation 'dev.akif:spring-boot-crud-test:0.4.0'
 }
 ```
 
@@ -29,7 +29,7 @@ For Maven, add following to your `pom.xml`:
   <dependency>
     <groupId>dev.akif</groupId>
     <artifactId>spring-boot-crud-test</artifactId>
-    <version>0.3.4</version>
+    <version>0.4.0</version>
     <scope>test</scope>
   </dependency>
 </dependencies>

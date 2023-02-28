@@ -8,22 +8,23 @@ import java.net.URL
 import java.time.LocalDate
 
 plugins {
-    idea
-    kotlin("jvm") version "1.8.0"
     `java-library`
     `maven-publish`
+    id("io.spring.dependency-management") version "1.1.0"
+    id("org.springframework.boot") version "3.0.3"
+    idea
+    kotlin("jvm") version "1.8.0"
     signing
 }
 
-val springBootVersion = "3.0.3"
 val junitVersion = "5.9.2"
 
 dependencies {
     implementation(project(":api"))
     implementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa:$springBootVersion")
-    implementation("org.springframework.boot:spring-boot-starter-test:$springBootVersion")
-    implementation("org.springframework.boot:spring-boot-starter-web:$springBootVersion")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-test")
+    implementation("org.springframework.boot:spring-boot-starter-web")
 }
 
 buildscript {

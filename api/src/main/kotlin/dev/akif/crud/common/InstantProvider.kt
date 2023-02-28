@@ -10,7 +10,7 @@ interface InstantProvider {
     /**
      * Current instant
      */
-    val now: Instant
+    fun now(): Instant
 
     /** @suppress */
     companion object {
@@ -22,7 +22,7 @@ interface InstantProvider {
          */
         @JvmStatic
         fun clockBased(clock: Clock): InstantProvider = object : InstantProvider {
-            override val now: Instant = clock.instant()
+            override fun now(): Instant = clock.instant()
         }
 
         /**

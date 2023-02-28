@@ -103,7 +103,7 @@ abstract class CRUDServiceTest<
         @DisplayName("should create a new entity with the same data of a deleted entity and return it")
         @Test
         fun testCreateAgain() {
-            testData.repository.update(testData.copy(testData.testEntity1).apply { deletedAt = testData.now })
+            testData.repository.update(testData.copy(testData.testEntity1).apply { deletedAt = testData.now() })
             val createModel = testData.entityToCreateModel(testData.testEntity1)
 
             val actual = service.create(createModel)
@@ -185,7 +185,7 @@ abstract class CRUDServiceTest<
         @DisplayName("should not return deleted entities")
         @Test
         fun testGetAllWithNoDeletedEntities() {
-            testData.repository.update(testData.copy(testData.testEntity3).apply { deletedAt = testData.now })
+            testData.repository.update(testData.copy(testData.testEntity3).apply { deletedAt = testData.now() })
             val testCases: List<Pair<PageRequest, Paged<M>>> = listOf(
                 PageRequest.of(0, 1) to Paged(
                     data = listOf(
@@ -235,7 +235,7 @@ abstract class CRUDServiceTest<
         @DisplayName("should return null when trying to get a deleted entity")
         @Test
         fun testGetDeletedNotFound() {
-            testData.repository.update(testData.copy(testData.testEntity1).apply { deletedAt = testData.now })
+            testData.repository.update(testData.copy(testData.testEntity1).apply { deletedAt = testData.now() })
             assertNull(service.get(testData.testEntity1.id!!))
         }
     }
@@ -275,7 +275,7 @@ abstract class CRUDServiceTest<
         @Test
         fun testUpdate() {
             val updateModel = testData.entityToUpdateModelWithModifications(testData.testEntity1)
-            val oneSecondLater = testData.now.plusSeconds(1)
+            val oneSecondLater = testData.now().plusSeconds(1)
             testData.instantProvider.adjust { it.plusSeconds(1) }
 
             val actual = service.update(testData.testEntity1.id!!, updateModel)
@@ -297,9 +297,9 @@ abstract class CRUDServiceTest<
         @DisplayName("should update with the same data of a deleted entity return updated entity")
         @Test
         fun testUpdateDeleted() {
-            testData.repository.update(testData.copy(testData.testEntity2).apply { deletedAt = testData.now })
+            testData.repository.update(testData.copy(testData.testEntity2).apply { deletedAt = testData.now() })
             val updateModel = testData.entityToUpdateModelWithNoModifications(testData.testEntity2)
-            val oneSecondLater = testData.now.plusSeconds(1)
+            val oneSecondLater = testData.now().plusSeconds(1)
             testData.instantProvider.adjust { it.plusSeconds(1) }
 
             val actual = service.update(testData.testEntity1.id!!, updateModel)
@@ -338,7 +338,7 @@ abstract class CRUDServiceTest<
         @DisplayName("should delete")
         @Test
         fun testDelete() {
-            val oneSecondLater = testData.now.plusSeconds(1)
+            val oneSecondLater = testData.now().plusSeconds(1)
             testData.instantProvider.adjust { it.plusSeconds(1) }
 
             service.delete(testData.testEntity1.id!!)

@@ -24,8 +24,8 @@ class FooTestData : CRUDTestData<UUID, FooEntity, Foo, CreateFoo, UpdateFoo, Foo
             foo = "Foo 1",
             bar = 1,
             version = 0,
-            createdAt = now,
-            updatedAt = now,
+            createdAt = now(),
+            updatedAt = now(),
             deletedAt = null
         )
 
@@ -35,8 +35,8 @@ class FooTestData : CRUDTestData<UUID, FooEntity, Foo, CreateFoo, UpdateFoo, Foo
             foo = "Foo 2",
             bar = 2,
             version = 0,
-            createdAt = now.plusSeconds(1),
-            updatedAt = now.plusSeconds(1),
+            createdAt = now().plusSeconds(1),
+            updatedAt = now().plusSeconds(1),
             deletedAt = null
         )
 
@@ -46,8 +46,8 @@ class FooTestData : CRUDTestData<UUID, FooEntity, Foo, CreateFoo, UpdateFoo, Foo
             foo = "Foo 3",
             bar = 3,
             version = 0,
-            createdAt = now.plusSeconds(2),
-            updatedAt = now.plusSeconds(2),
+            createdAt = now().plusSeconds(2),
+            updatedAt = now().plusSeconds(2),
             deletedAt = null
         )
 

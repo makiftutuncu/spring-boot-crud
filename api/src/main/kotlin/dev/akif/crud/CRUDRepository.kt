@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.NoRepositoryBean
 import org.springframework.data.repository.Repository
-import org.springframework.transaction.annotation.Transactional
 import java.io.Serializable
 import java.util.*
 
@@ -43,7 +42,6 @@ interface CRUDRepository<I : Serializable, E : CRUDEntity<I>> : Repository<E, I>
      * @return Saved entity
      */
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Transactional
     fun save(entity: E): E
 
     /**
@@ -53,11 +51,15 @@ interface CRUDRepository<I : Serializable, E : CRUDEntity<I>> : Repository<E, I>
      * @return Number of affected rows
      */
     @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Transactional
     @Query(
         """UPDATE #{#entityName} e
            SET e = :entity, e.version = :#{#entity.version} + 1
            WHERE e.id = :#{#entity.id} AND e.version = :#{#entity.version}"""
     )
     fun update(entity: E): Int
+
+    /**
+     * Flushes the changes to the database
+     */
+    fun flush()
 }
