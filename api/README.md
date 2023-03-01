@@ -11,14 +11,14 @@ For Gradle with Kotlin DSL, add following to `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-  implementation('dev.akif:spring-boot-crud-api:0.3.4')
+  implementation('dev.akif:spring-boot-crud-api:0.4.0')
 }
 ```
 For Gradle, add following to `build.gradle`:
 
 ```kotlin
 dependencies {
-  implementation 'dev.akif:spring-boot-crud-api:0.3.4'
+  implementation 'dev.akif:spring-boot-crud-api:0.4.0'
 }
 ```
 For Maven, add following to your `pom.xml`:
@@ -28,7 +28,7 @@ For Maven, add following to your `pom.xml`:
   <dependency>
     <groupId>dev.akif</groupId>
     <artifactId>spring-boot-crud-api</artifactId>
-    <version>0.3.4</version>
+    <version>0.4.0</version>
   </dependency>
 </dependencies>
 ```
@@ -370,8 +370,8 @@ import java.util.UUID
 @RequestMapping("/cats")
 class CatController(
     service: CatService,
-    mapper: CatMapper
-): CRUDController<UUID, CatEntity, Cat, CatDTO, CreateCat, UpdateCat, CreateCatDTO, UpdateCatDTO, CatMapper, CatMapper, CatRepository, CatService>(
+    mapper: CatDTOMapper
+): CRUDController<UUID, CatEntity, Cat, CatDTO, CreateCat, UpdateCat, CreateCatDTO, UpdateCatDTO, CatMapper, CatDTOMapper, CatRepository, CatService>(
     typeName = "Cat",
     service = service,
     mapper = mapper
@@ -506,7 +506,7 @@ import java.util.UUID
 @RestController
 @RequestMapping("/cats")
 @Tag(name = "Cats", description = "CRUD operations for cat entities")
-class CatController(service: CatService, mapper: CatMapper): CRUDController<UUID, CatEntity, Cat, CatDTO, CreateCat, UpdateCat, CreateCatDTO, UpdateCatDTO, CatMapper, CatMapper, CatRepository, CatService>(
+class CatController(service: CatService, mapper: CatDTOMapper): CRUDController<UUID, CatEntity, Cat, CatDTO, CreateCat, UpdateCat, CreateCatDTO, UpdateCatDTO, CatMapper, CatDTOMapper, CatRepository, CatService>(
     typeName = "Cat",
     service = service,
     mapper = mapper

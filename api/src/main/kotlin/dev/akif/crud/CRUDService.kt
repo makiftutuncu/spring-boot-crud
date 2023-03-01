@@ -2,7 +2,6 @@ package dev.akif.crud
 
 import dev.akif.crud.common.InstantProvider
 import dev.akif.crud.common.Paged
-import dev.akif.crud.error.CRUDErrorException
 import dev.akif.crud.error.CRUDErrorException.Companion.alreadyExists
 import dev.akif.crud.error.CRUDErrorException.Companion.notFound
 import org.slf4j.Logger
@@ -12,7 +11,6 @@ import org.springframework.data.domain.Pageable
 import org.springframework.transaction.annotation.Transactional
 import java.io.Serializable
 import java.sql.SQLException
-import java.util.function.Supplier
 
 /**
  * Base implementation of a CRUD service for business layer
@@ -61,9 +59,11 @@ abstract class CRUDService<
     @Transactional
     open fun create(createModel: CM): M {
         log.info("Creating new $typeName: $createModel")
-        val entity = mapper.entityToBeCreatedFrom(createModel, instantProvider.now)
+        val entity = mapper.entityToBeCreatedFrom(createModel, instantProvider.now())
         log.trace("Built ${typeName}Entity: $entity")
-        val saved = persist({ repository.save(entity) }, createModel)
+        val saved = persist(logData = createModel) {
+            repository.save(entity)
+        }
         log.trace("Saved ${typeName}Entity: $saved")
         val model = mapper.entityToModel(saved)
         log.trace("Built $typeName: $model")
@@ -118,13 +118,13 @@ abstract class CRUDService<
         val expectedVersion = entity.version ?: 0
         entity.apply {
             mapper.updateEntityWith(this, updateModel)
-            updatedAt = instantProvider.now
+            updatedAt = instantProvider.now()
         }
         log.trace("Built ${typeName}Entity $id to update: $entity")
-        persist(
-            { assertSingleRowIsAffected(repository.update(entity), expectedVersion) },
-            updateModel
-        )
+        persist(logData = updateModel) {
+            val affected = repository.update(entity)
+            assertSingleRowIsAffected(affected, expectedVersion)
+        }
         entity.version = entity.version?.plus(1)
         log.trace("Updated ${typeName}Entity $id: $entity")
         val model = mapper.entityToModel(entity)
@@ -144,15 +144,15 @@ abstract class CRUDService<
         log.trace("Found ${typeName}Entity $id to delete: $entity")
         val expectedVersion = entity.version ?: 0
         entity.apply {
-            val now = instantProvider.now
+            val now = instantProvider.now()
             updatedAt = now
             deletedAt = now
         }
         log.trace("Built ${typeName}Entity $id to delete: $entity")
-        persist(
-            { assertSingleRowIsAffected(repository.update(entity), expectedVersion) },
-            "with id $id"
-        )
+        persist(logData = "with id $id") {
+            val affected = repository.update(entity)
+            assertSingleRowIsAffected(affected, expectedVersion)
+        }
         log.trace("Deleted ${typeName}Entity $id")
     }
 
@@ -161,25 +161,28 @@ abstract class CRUDService<
      *
      * This also flushes the changes made to the entity and performs a duplicate check.
      *
-     * @param A      Type of result persisting action returns
-     * @param action Persisting action to perform
-     * @param data   Data describing the entity, used to build an error if there is a duplicate
+     * @param A       Type of result persisting action returns
+     * @param logData Data describing the entity, used to build an error if there is a duplicate
+     * @param action  Persisting action to perform
      * @return Result of the persisting action
      */
-    @Transactional
-    protected open fun <A> persist(action: Supplier<A>, data: Any): A =
+    protected open fun <A> persist(logData: Any, action: () -> A): A {
         try {
-            action.get()
+            val result = action()
+            repository.flush()
+            return result
         } catch (t: Throwable) {
-            val cause = NestedExceptionUtils.getMostSpecificCause(t)
-            if (cause is CRUDErrorException) {
-                throw cause
+            val alreadyExistsError = NestedExceptionUtils.getMostSpecificCause(t).let {
+                it is SQLException && (
+                        it.message?.contains("duplicate") == true || it.message?.contains("constraint") == true
+                )
             }
-            if (cause is SQLException && cause.message?.contains("duplicate") == true) {
-                throw alreadyExists(typeName, data)
+            if (alreadyExistsError) {
+                throw alreadyExists(typeName, logData)
             }
             throw t
         }
+    }
 
     private fun assertSingleRowIsAffected(affected: Int, expected: Int): Int {
         check(affected == 1) { "Cannot update ${typeName}Entity, entity version wasn't $expected!" }

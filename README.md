@@ -6,7 +6,7 @@ spring-boot-crud is a library to help build CRUD applications easily with Spring
 
 | Latest Version | Java Version | Kotlin Version | Spring Boot Version |
 | -------------- | ------------ | -------------- | ------------------- |
-| 0.3.4          | 17           | 1.8.0          | 3.0.3               |
+| 0.4.0          | 17           | 1.8.0          | 3.0.3               |
 
 ## Table of Contents
 
@@ -23,8 +23,8 @@ spring-boot-crud consists of 2 modules. You can click on a module for more infor
 
 | Name                                    | Details              | Documentation                                                |
 | --------------------------------------- | -------------------- | ------------------------------------------------------------ |
-| [spring-boot-crud-api](api/README.md)   | API implementations  | [![](https://img.shields.io/badge/docs-0.3.4-brightgreen.svg?style=for-the-badge&logo=kotlin&color=0095d5&labelColor=333333)](https://javadoc.io/doc/dev.akif/spring-boot-crud-api) |
-| [spring-boot-crud-test](test/README.md) | Test implementations | [![](https://img.shields.io/badge/docs-0.3.4-brightgreen.svg?style=for-the-badge&logo=kotlin&color=0095d5&labelColor=333333)](https://javadoc.io/doc/dev.akif/spring-boot-crud-test) |
+| [spring-boot-crud-api](api/README.md)   | API implementations  | [![](https://img.shields.io/badge/docs-0.4.0-brightgreen.svg?style=for-the-badge&logo=kotlin&color=0095d5&labelColor=333333)](https://javadoc.io/doc/dev.akif/spring-boot-crud-api) |
+| [spring-boot-crud-test](test/README.md) | Test implementations | [![](https://img.shields.io/badge/docs-0.4.0-brightgreen.svg?style=for-the-badge&logo=kotlin&color=0095d5&labelColor=333333)](https://javadoc.io/doc/dev.akif/spring-boot-crud-test) |
 
 ## Examples
 

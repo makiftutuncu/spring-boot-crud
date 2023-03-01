@@ -13,8 +13,7 @@ class AdjustableInstantProvider(
     private var instant: Instant = Instant.now().with(ChronoField.NANO_OF_SECOND, 0),
     private var adjustmentMillis: Long = 0L
 ) : InstantProvider {
-    override val now: Instant
-        get() = instant.plusMillis(adjustmentMillis)
+    override fun now(): Instant = instant.plusMillis(adjustmentMillis)
 
     /**
      * Adjusts the time by given function, [now] will start returning the adjusted instant after calling this
@@ -22,8 +21,8 @@ class AdjustableInstantProvider(
      * @param f Function to adjust the time
      */
     fun adjust(f: (Instant) -> Instant) {
-        val before = now
-        val after = f(now)
+        val before = now()
+        val after = f(now())
         adjustmentMillis = after.toEpochMilli() - before.toEpochMilli()
         log.debug("Adjusted instant provider by ${adjustmentMillis}ms, it was $before and it is now $after")
     }
@@ -33,7 +32,7 @@ class AdjustableInstantProvider(
      */
     fun reset() {
         adjustmentMillis = 0
-        log.debug("Reset instant provider, it is now $now")
+        log.debug("Reset instant provider, it is now ${now()}")
     }
 
     /** @suppress */

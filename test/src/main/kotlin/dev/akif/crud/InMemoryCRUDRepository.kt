@@ -68,6 +68,8 @@ class InMemoryCRUDRepository<
             ?: 0
     }
 
+    override fun flush() {}
+
     /**
      * Clears the repository for testing, there will be no entities left after this.
      */

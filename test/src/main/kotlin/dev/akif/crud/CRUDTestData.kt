@@ -37,7 +37,7 @@ abstract class CRUDTestData<
     /**
      * Now instant to use in tests
      */
-    val now: Instant = instantProvider.now
+    fun now(): Instant = instantProvider.now()
 
     /**
      * First test entity

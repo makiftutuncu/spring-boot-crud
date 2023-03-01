@@ -7,27 +7,26 @@ import java.net.URL
 import java.time.LocalDate
 
 plugins {
-    idea
-    kotlin("jvm") version "1.8.0"
     `java-library`
     `maven-publish`
+    id("io.spring.dependency-management") version "1.1.0"
+    id("org.springframework.boot") version "3.0.3"
+    idea
+    kotlin("jvm") version "1.8.0"
     signing
 }
 
-val springBootVersion = "3.0.3"
-val springdocVersion = "2.0.2"
 val junitVersion = "5.9.2"
-val mockitoJUnitVersion = "5.0.0"
+val springdocVersion = "2.0.2"
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa:$springBootVersion")
-    implementation("org.springframework.boot:spring-boot-starter-validation:$springBootVersion")
-    implementation("org.springframework.boot:spring-boot-starter-web:$springBootVersion")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springdocVersion")
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion")
-    testImplementation("org.mockito:mockito-junit-jupiter:$mockitoJUnitVersion")
-    testImplementation("org.springframework.boot:spring-boot-starter-test:$springBootVersion")
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:$junitVersion")
 }
 
