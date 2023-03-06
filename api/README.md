@@ -3,9 +3,15 @@
 
 This is the API module of spring-boot-crud. It brings support for classes to build CRUD applications with out-of-the-box functionality. See [Contents](#contents) section for details of each class it provides.
 
+## Table of Contents
+
+1. [Getting Started](#getting-started)
+2. [Contents](#contents)
+3. [Variants](#variants)
+
 ## Getting Started
 
-To get started, add spring-boot-crud-api as a dependency to your project.
+To get started, add spring-boot-crud-api as a dependency to your existing project. In case you are building something from scratch, you can generate a project with typical dependencies needed for a CRUD application using [Spring Initialzr](https://start.spring.io/#!dependencies=web,data-jpa,flyway,postgresql,validation).
 
 For Gradle with Kotlin DSL, add following to `build.gradle.kts`:
 
@@ -516,3 +522,34 @@ class CatController(service: CatService, mapper: CatDTOMapper): CRUDController<U
 The default configuration of Swagger UI is at `/swagger-ui.html` so if you navigate to that after running your application, you should have access to your generated API documentation.
 
 ![](../assets/swagger-ui.png)
+
+## Variants
+
+In cases where you don't need all the flexibility explained above, spring-boot-crud-api also provides some variants. Since these variants simplify the abstractions, they require fewer type parameters, which may make them more useful in particular cases.
+
+### 1. [Simple](src/main/kotlin/dev/akif/crud/simple)
+
+This is a variant of CRUD where there is no distinction between a model and its create/update components. The same idea also applies to DTOs. This would imply following:
+
+* There is one DTO type and it extends `SimpleDTO`. This means it is in-turn extending a `CRUDDTO`, a `CRUDCreateDTO` and a `CRUDUpdateDTO`.
+* There is one model type and it extends `SimpleModel`. This means it is in-turn extending a `CRUDModel`, a `CRUDCreateModel` and a `CRUDUpdateModel`.
+
+All other `CRUD*` compontents follow `Simple*` naming.
+
+### 2. [Simpler](src/main/kotlin/dev/akif/crud/simpler)
+
+This is a variant that takes `Simple` a step further and removes the distinction between a DTO and a model. This would imply following:
+
+* There is one model type and it extends `SimplerModel`. This means it is in-turn extending a `CRUDModel`, a `CRUDCreateModel`, a `CRUDUpdateModel`, a `CRUDDTO`, a `CRUDCreateDTO` and a `CRUDUpdateDTO`.
+
+All other `CRUD*` compontents follow `Simpler*` naming.
+
+### 3. [Simplest](src/main/kotlin/dev/akif/crud/simplest)
+
+This is a variant that takes `Simpler` a step further and removes the model as well. The only component describing your data would be the entity. This would imply following:
+
+* There is only the entity type and it extends `SimplestEntity`. This means it is in-turn extending a `CRUDEntity`, a `CRUDModel`, a `CRUDCreateModel`, a `CRUDUpdateModel`, a `CRUDDTO`, a `CRUDCreateDTO` and a `CRUDUpdateDTO`.
+
+All other `CRUD*` compontents follow `Simplest*` naming.
+
+The simplest variant is not recommended for a real-world application as it would lead to exposing your implementation and persistence details to the outside world via your entity type.

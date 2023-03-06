@@ -12,7 +12,7 @@ spring-boot-crud is a library to help build CRUD applications easily with Spring
 
 1. [Modules](#modules)
 2. [Examples](#examples)
-3. [Development & Testing](#development-&-testing)
+3. [Development & Testing](#development--testing)
 4. [Releases](#releases)
 5. [Contributing](#contributing)
 6. [License](#license)
@@ -21,9 +21,9 @@ spring-boot-crud is a library to help build CRUD applications easily with Spring
 
 spring-boot-crud consists of 2 modules. You can click on a module for more information and detailed instructions.
 
-| Name                                    | Details              | Documentation                                                |
-| --------------------------------------- | -------------------- | ------------------------------------------------------------ |
-| [spring-boot-crud-api](api/README.md)   | API implementations  | [![](https://img.shields.io/badge/docs-0.4.0-brightgreen.svg?style=for-the-badge&logo=kotlin&color=0095d5&labelColor=333333)](https://javadoc.io/doc/dev.akif/spring-boot-crud-api) |
+| Name                                    | Details              | Documentation                                                                                                                                                                        |
+|-----------------------------------------|----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [spring-boot-crud-api](api/README.md)   | API implementations  | [![](https://img.shields.io/badge/docs-0.4.0-brightgreen.svg?style=for-the-badge&logo=kotlin&color=0095d5&labelColor=333333)](https://javadoc.io/doc/dev.akif/spring-boot-crud-api)  |
 | [spring-boot-crud-test](test/README.md) | Test implementations | [![](https://img.shields.io/badge/docs-0.4.0-brightgreen.svg?style=for-the-badge&logo=kotlin&color=0095d5&labelColor=333333)](https://javadoc.io/doc/dev.akif/spring-boot-crud-test) |
 
 ## Examples

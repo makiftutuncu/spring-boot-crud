@@ -2,6 +2,11 @@
 
 This is the test module of spring-boot-crud. It brings some test utilities and base classes for testing your CRUD applications built with spring-boot-crud-api. See [Contents](#contents) section for details of each class it provides.
 
+## Table of Contents
+
+1. [Getting Started](#getting-started)
+2. [Contents](#contents)
+
 ## Getting Started
 
 To get started, add spring-boot-crud-test as a test dependency to your project.
