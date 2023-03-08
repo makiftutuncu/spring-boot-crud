@@ -6,7 +6,7 @@ plugins {
 
 allprojects {
     group = "dev.akif"
-    version = "0.4.0"
+    version = "0.5.0-SNAPSHOT"
 
     apply(plugin = "org.jetbrains.dokka")
 }

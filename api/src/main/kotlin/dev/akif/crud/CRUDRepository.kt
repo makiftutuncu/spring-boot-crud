@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.NoRepositoryBean
 import org.springframework.data.repository.Repository
+import org.springframework.data.repository.query.Param
 import java.io.Serializable
 import java.util.*
 
@@ -31,7 +32,7 @@ interface CRUDRepository<I : Serializable, E : CRUDEntity<I>> : Repository<E, I>
      * Finds an entity with given id and deletion flag
      *
      * @param id Id of the entity to find
-     * @return Found entity in an [Optional]
+     * @return Found entity or null if it is not found
      */
     fun findByIdAndDeletedAtIsNull(id: I): E?
 

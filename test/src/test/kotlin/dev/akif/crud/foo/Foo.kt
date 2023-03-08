@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController
 import java.time.Instant
 import jakarta.persistence.Entity as JakartaEntity
 import dev.akif.crud.CRUDTestData
+import dev.akif.crud.common.Parameters
 import java.util.UUID
 
 class FooTestData : CRUDTestData<UUID, FooEntity, Foo, CreateFoo, UpdateFoo, FooTestData>(typeName = "Foo") {
@@ -141,13 +142,13 @@ class FooMapper: CRUDMapper<UUID, FooEntity, Foo, CreateFoo, UpdateFoo>, CRUDDTO
         }
     }
 
-    override fun createDTOToCreateModel(createDTO: CreateFooDTO): CreateFoo =
+    override fun createDTOToCreateModel(createDTO: CreateFooDTO, parameters: Parameters): CreateFoo =
         CreateFoo(
             foo = createDTO.foo,
             bar = createDTO.bar
         )
 
-    override fun modelToDTO(model: Foo): FooDTO =
+    override fun modelToDTO(model: Foo, parameters: Parameters): FooDTO =
         FooDTO(
             id = model.id,
             foo = model.foo,
@@ -156,7 +157,7 @@ class FooMapper: CRUDMapper<UUID, FooEntity, Foo, CreateFoo, UpdateFoo>, CRUDDTO
             updatedAt = model.updatedAt
         )
 
-    override fun updateDTOToUpdateModel(updateDTO: UpdateFooDTO): UpdateFoo =
+    override fun updateDTOToUpdateModel(updateDTO: UpdateFooDTO, parameters: Parameters): UpdateFoo =
         UpdateFoo(
             foo = updateDTO.foo,
             bar = updateDTO.bar

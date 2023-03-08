@@ -1,6 +1,7 @@
 package dev.akif.crud
 
 import dev.akif.crud.common.Paged
+import dev.akif.crud.common.Parameters
 import dev.akif.crud.error.CRUDError
 import dev.akif.crud.error.CRUDErrorException
 import io.swagger.v3.oas.annotations.Operation
@@ -8,6 +9,7 @@ import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.PageRequest
@@ -62,6 +64,8 @@ abstract class CRUDController<
      * Default implementation for creating a new entity from given create DTO
      *
      * @param createDTO Create DTO containing data of the entity to create
+     * @param pathVariables Path variables of the request
+     * @param request HTTP request
      * @return DTO of the created entity
      */
     @ApiResponse(responseCode = CODE_CREATED, description = CREATE_RESPONSE)
@@ -77,14 +81,17 @@ abstract class CRUDController<
     @PostMapping(consumes = [MediaType.APPLICATION_JSON_VALUE], produces = [MediaType.APPLICATION_JSON_VALUE])
     @ResponseStatus(code = HttpStatus.CREATED)
     fun create(
-        @Parameter(required = true) @RequestBody createDTO: CD
+        @Parameter(required = true) @RequestBody createDTO: CD,
+        @Parameter(hidden = true) @PathVariable pathVariables: Map<String, String>,
+        @Parameter(hidden = true) request: HttpServletRequest
     ): D {
-        log.debug("Got request to create new $typeName: $createDTO")
-        val createModel = mapper.createDTOToCreateModel(createDTO)
+        val parameters = Parameters(pathVariables, request)
+        log.debug("Got request to create new $typeName with parameters $parameters: $createDTO")
+        val createModel = mapper.createDTOToCreateModel(createDTO, parameters)
         log.trace("Built Create$typeName: $createModel")
         val model = service.create(createModel)
         log.trace("Created $typeName: $model")
-        val dto = mapper.modelToDTO(model)
+        val dto = mapper.modelToDTO(model, parameters)
         log.trace("Built ${typeName}DTO: $dto")
         return dto
     }
@@ -92,8 +99,10 @@ abstract class CRUDController<
     /**
      * Default implementation for listing entities with given pagination
      *
-     * @param page    Number of the 0-based page of entities to list
+     * @param page Number of the 0-based page of entities to list
      * @param perPage Number of entities to list per page
+     * @param pathVariables Path variables of the request
+     * @param request HTTP request
      * @return [Paged] of DTOs of entities
      */
     @ApiResponse(responseCode = CODE_OK, description = GET_ALL_RESPONSE)
@@ -109,13 +118,16 @@ abstract class CRUDController<
             name = "perPage",
             required = false,
             defaultValue = "20"
-        ) perPage: Int
+        ) perPage: Int,
+        @Parameter(hidden = true) @PathVariable pathVariables: Map<String, String>,
+        @Parameter(hidden = true) request: HttpServletRequest
     ): Paged<D> {
+        val parameters = Parameters(pathVariables, request)
         val pageRequest = PageRequest.of(page, perPage)
-        log.debug("Got request to get $typeName $pageRequest")
+        log.debug("Got request to get $typeName $pageRequest with parameters $parameters")
         val pagedModels = service.getAll(pageRequest)
         log.trace("Got $typeName $pageRequest: ${pagedModels.data}")
-        val pagedDTOs = pagedModels.map(mapper::modelToDTO)
+        val pagedDTOs = pagedModels.map { mapper.modelToDTO(it, parameters) }
         log.trace("Built a paged DTOs of $typeName: ${pagedDTOs.data}")
         return pagedDTOs
     }
@@ -124,6 +136,8 @@ abstract class CRUDController<
      * Default implementation for getting an entity with given id
      *
      * @param id Id of the entity
+     * @param pathVariables Path variables of the request
+     * @param request HTTP request
      * @return DTO of the entity with given id
      */
     @ApiResponse(responseCode = CODE_OK, description = GET_RESPONSE)
@@ -138,12 +152,15 @@ abstract class CRUDController<
     @GetMapping(path = ["/{id}"], produces = [MediaType.APPLICATION_JSON_VALUE])
     @Operation(summary = GET_SUMMARY, description = GET_DESCRIPTION)
     fun get(
-        @Parameter(name = "id", description = GET_ID_DESCRIPTION) @PathVariable("id") id: I
+        @Parameter(name = "id", description = GET_ID_DESCRIPTION) @PathVariable("id") id: I,
+        @Parameter(hidden = true) @PathVariable pathVariables: Map<String, String>,
+        @Parameter(hidden = true) request: HttpServletRequest
     ): D {
-        log.debug("Got request to get $typeName $id")
+        val parameters = Parameters(pathVariables, request)
+        log.debug("Got request to get $typeName $id with parameters $parameters")
         val model = service.get(id) ?: throw CRUDErrorException.notFound(typeName, id)
         log.trace("Got $typeName $id: $model")
-        val dto = mapper.modelToDTO(model)
+        val dto = mapper.modelToDTO(model, parameters)
         log.trace("Built ${typeName}DTO $id: $dto")
         return dto
     }
@@ -151,8 +168,10 @@ abstract class CRUDController<
     /**
      * Default implementation for updating an entity with given id with given update DTO data
      *
-     * @param id        Id of the entity to update
+     * @param id Id of the entity to update
      * @param updateDTO Update DTO containing data to be updated
+     * @param pathVariables Path variables of the request
+     * @param request HTTP request
      * @return DTO of the updated entity
      */
     @ApiResponse(responseCode = CODE_OK, description = UPDATE_RESPONSE)
@@ -180,14 +199,17 @@ abstract class CRUDController<
     )
     fun update(
         @Parameter(name = "id", description = UPDATE_ID_DESCRIPTION) @PathVariable("id") id: I,
-        @Parameter(required = true) @RequestBody updateDTO: UD
+        @Parameter(required = true) @RequestBody updateDTO: UD,
+        @Parameter(hidden = true) @PathVariable pathVariables: Map<String, String>,
+        @Parameter(hidden = true) request: HttpServletRequest
     ): D {
-        log.debug("Got request to update $typeName $id: $updateDTO")
-        val updateModel = mapper.updateDTOToUpdateModel(updateDTO)
+        val parameters = Parameters(pathVariables, request)
+        log.debug("Got request to update $typeName $id: $updateDTO with parameters $parameters")
+        val updateModel = mapper.updateDTOToUpdateModel(updateDTO, parameters)
         log.trace("Built Update$typeName $id: $updateModel")
         val model = service.update(id, updateModel)
         log.trace("Updated $typeName $id: $model")
-        val dto = mapper.modelToDTO(model)
+        val dto = mapper.modelToDTO(model, parameters)
         log.trace("Built ${typeName}DTO $id: $dto")
         return dto
     }
