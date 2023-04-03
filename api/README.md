@@ -235,13 +235,13 @@ class CatMapper: CRUDMapper<UUID, CatEntity, Cat, CreateCat, UpdateCat> {
 
     override fun entityToModel(entity: CatEntity): Cat =
         Cat(
-            id = requireNotNull(entity.id) { "id was null." },
-            name = requireNotNull(entity.name) { "name was null." },
-            breed = requireNotNull(entity.breed) { "breed was null." },
-            age = requireNotNull(entity.age) { "age was null." },
-            version = requireNotNull(entity.version) { "version was null." },
-            createdAt = requireNotNull(entity.createdAt) { "createdAt was null." },
-            updatedAt = requireNotNull(entity.updatedAt) { "updatedAt was null." },
+            id = requireNotNull(entity.id) { "id is required." },
+            name = requireNotNull(entity.name) { "name is required." },
+            breed = requireNotNull(entity.breed) { "breed is required." },
+            age = requireNotNull(entity.age) { "age is required." },
+            version = requireNotNull(entity.version) { "version is required." },
+            createdAt = requireNotNull(entity.createdAt) { "createdAt is required." },
+            updatedAt = requireNotNull(entity.updatedAt) { "updatedAt is required." },
             deletedAt = entity.deletedAt
         )
 

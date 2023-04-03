@@ -14,16 +14,14 @@ import java.io.Serializable
  * @param CM       Create model type of the data which is a [CRUDCreateModel]
  * @param TestData Test data type of the data which is a [CRUDTestData]
  *
- * @property typeName Type name of the data
  * @property testData Mapper dependency of this test which is a [CRUDTestData]
  */
-class InMemoryCRUDRepository<
+open class InMemoryCRUDRepository<
         I : Serializable,
         E : CRUDEntity<I>,
         CM : CRUDCreateModel,
         TestData : CRUDTestData<I, E, *, CM, *, TestData>>(
-    private val typeName: String,
-    private val testData: TestData
+    protected val testData: TestData
 ) : CRUDRepository<I, E> {
     /**
      * Map of entities by their ids, accessible for tests
@@ -53,8 +51,11 @@ class InMemoryCRUDRepository<
 
     override fun save(entity: E): E {
         handleDuplicates(entity, testData.entityToCreateModel(entity))
+        if (entity.id == null) {
+            entity.id = testData.idGenerator.next()
+        }
         val copied = testData.copy(entity)
-        entity.id?.also { entities[it] = copied }
+        entities[entity.id!!] = copied
         return copied
     }
 
@@ -95,7 +96,7 @@ class InMemoryCRUDRepository<
                 && testData.areDuplicates(entity, e)
         }
         if (found) {
-            throw CRUDErrorException.alreadyExists(typeName, data)
+            throw CRUDErrorException.alreadyExists(testData.typeName, data)
         }
     }
 }

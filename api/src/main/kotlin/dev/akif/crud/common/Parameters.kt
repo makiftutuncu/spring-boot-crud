@@ -75,4 +75,13 @@ data class Parameters(val path: Map<String, String>, val query: Map<String, List
                 throw IllegalArgumentException("Cannot get '$name' query parameter, conversion failed", it)
             }
         }
+
+    /** @suppress */
+    companion object {
+        /**
+         * Empty [Parameters]
+         */
+        @JvmField
+        val empty: Parameters = Parameters(emptyMap(), emptyMap())
+    }
 }

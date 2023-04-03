@@ -23,7 +23,6 @@ import java.io.Serializable
  * @param S        Service type of the data which is a [CRUDService]
  * @param TestData Test data type of the data which is a [CRUDTestData]
  *
- * @property typeName Type name of the data
  * @property mapper   Mapper dependency of this test which is a [CRUDMapper]
  * @property testData Test data dependency of this test which is a [CRUDTestData]
  */
@@ -37,7 +36,6 @@ abstract class CRUDServiceTest<
         R : CRUDRepository<I, E>,
         S : CRUDService<I, E, M, CM, UM, R, Mapper>,
         TestData : CRUDTestData<I, E, M, CM, UM, TestData>>(
-    protected val typeName: String,
     protected val mapper: Mapper,
     protected val testData: TestData
 ) {
@@ -74,10 +72,10 @@ abstract class CRUDServiceTest<
         @Test
         fun testCreateAlreadyExists() {
             val createModel = testData.entityToCreateModel(testData.testEntity1)
-            val exception = assertThrows(CRUDErrorException::class.java) { service.create(createModel) }
+            val exception = assertThrows(CRUDErrorException::class.java) { service.create(createModel, testData.testParameters) }
 
             val actual = exception.error
-            val expected = CRUDError(HttpStatus.CONFLICT, "$typeName with $createModel already exists.")
+            val expected = CRUDError(HttpStatus.CONFLICT, "${testData.typeName} with $createModel already exists.")
 
             assertEquals(expected, actual)
         }
@@ -89,14 +87,14 @@ abstract class CRUDServiceTest<
             testData.repository.clear()
             val createModel = testData.entityToCreateModel(testData.testEntity1)
 
-            val actual = service.create(createModel)
+            val actual = service.create(createModel, testData.testParameters)
             val expected = mapper.entityToModel(testData.copy(testData.testEntity1).apply { id = actual.id() })
 
             assertEquals(expected, actual)
 
-            val foundEntity = testData.repository.findByIdAndDeletedAtIsNull(actual.id())?.let(mapper::entityToModel)
+            val found = service.get(actual.id(), testData.testParameters)
 
-            assertEquals(expected, foundEntity)
+            assertEquals(expected, found)
         }
 
         /** @suppress */
@@ -106,32 +104,28 @@ abstract class CRUDServiceTest<
             testData.repository.update(testData.copy(testData.testEntity1).apply { deletedAt = testData.now() })
             val createModel = testData.entityToCreateModel(testData.testEntity1)
 
-            val actual = service.create(createModel)
+            val actual = service.create(createModel, testData.testParameters)
             val expected = mapper.entityToModel(testData.copy(testData.testEntity1).apply { id = actual.id() })
 
             assertEquals(expected, actual)
 
-            val foundEntity = testData.repository.findByIdAndDeletedAtIsNull(actual.id())?.let(mapper::entityToModel)
+            val found = service.get(actual.id(), testData.testParameters)
 
-            assertEquals(expected, foundEntity)
-            assertNotEquals(testData.testEntity1, foundEntity)
+            assertEquals(expected, found)
+            assertNotEquals(testData.testEntity1, found)
         }
     }
 
     /** @suppress */
-    @DisplayName("getting all entities")
+    @DisplayName("listing entities")
     @Nested
-    inner class GettingAll {
-        @DisplayName("should return at least 3 entities with default pagination")
+    inner class Listing {
+        @DisplayName("should return some entities with default pagination")
         @Test
-        fun testGetAllWithDefaultPagination() {
-            val actual = service.getAll(PageRequest.of(0, 20))
+        fun testListWithDefaultPagination() {
+            val actual = service.list(PageRequest.of(0, 20), testData.testParameters)
             val expected = Paged(
-                data = listOf(
-                    mapper.entityToModel(testData.testEntity1),
-                    mapper.entityToModel(testData.testEntity2),
-                    mapper.entityToModel(testData.testEntity3)
-                ),
+                data = testData.defaultFirstPageEntities.map(mapper::entityToModel),
                 page = 0,
                 perPage = 20,
                 totalPages = 1
@@ -142,30 +136,10 @@ abstract class CRUDServiceTest<
 
         @DisplayName("should return correct entities with pagination")
         @Test
-        fun testGetAllWithPagination() {
-            val testCases: List<Pair<PageRequest, Paged<M>>> = listOf(
-                PageRequest.of(0, 2) to Paged(
-                    data = listOf(
-                        mapper.entityToModel(testData.testEntity1),
-                        mapper.entityToModel(testData.testEntity2)
-                    ),
-                    page = 0,
-                    perPage = 2,
-                    totalPages = 2
-                ),
-                PageRequest.of(1, 2) to Paged(
-                    data = listOf(
-                        mapper.entityToModel(testData.testEntity3)
-                    ),
-                    page = 1,
-                    perPage = 2,
-                    totalPages = 2
-                ),
-                PageRequest.of(2, 2) to Paged.empty(page = 2, perPage = 2, totalPages = 2)
-            )
-
-            for ((pageable, expected) in testCases) {
-                val actual = service.getAll(pageable)
+        fun testListWithPagination() {
+            testData.paginationTestCases.forEach { (pageRequest, pagedEntities) ->
+                val expected = pagedEntities.map(mapper::entityToModel)
+                val actual = service.list(pageRequest, testData.testParameters)
 
                 assertEquals(expected, actual)
             }
@@ -173,10 +147,10 @@ abstract class CRUDServiceTest<
 
         @DisplayName("should return empty page when no entities exist")
         @Test
-        fun testGetAllWithNoEntities() {
+        fun testListWithNoEntities() {
             testData.repository.clear()
 
-            val actual = service.getAll(PageRequest.of(0, 20))
+            val actual = service.list(PageRequest.of(0, 20), testData.testParameters)
             val expected = Paged.empty<M>(page = 0, perPage = 20, totalPages = 0)
 
             assertEquals(expected, actual)
@@ -184,7 +158,7 @@ abstract class CRUDServiceTest<
 
         @DisplayName("should not return deleted entities")
         @Test
-        fun testGetAllWithNoDeletedEntities() {
+        fun testListWithNoDeletedEntities() {
             testData.repository.update(testData.copy(testData.testEntity3).apply { deletedAt = testData.now() })
             val testCases: List<Pair<PageRequest, Paged<M>>> = listOf(
                 PageRequest.of(0, 1) to Paged(
@@ -206,7 +180,7 @@ abstract class CRUDServiceTest<
             )
 
             for ((pageable, expected) in testCases) {
-                val actual = service.getAll(pageable)
+                val actual = service.list(pageable, testData.testParameters)
 
                 assertEquals(expected, actual)
             }
@@ -220,13 +194,13 @@ abstract class CRUDServiceTest<
         @DisplayName("should return null when trying to get an entity that doesn't exist")
         @Test
         fun testGetNotFound() {
-            assertNull(service.get(testData.randomId()))
+            assertNull(service.get(testData.randomId(), testData.testParameters))
         }
 
         @DisplayName("should return correct entity")
         @Test
         fun testGet() {
-            val actual = service.get(testData.testEntity1.id!!)
+            val actual = service.get(testData.testEntity1.id!!, testData.testParameters)
             val expected = mapper.entityToModel(testData.testEntity1)
 
             assertEquals(expected, actual)
@@ -236,7 +210,7 @@ abstract class CRUDServiceTest<
         @Test
         fun testGetDeletedNotFound() {
             testData.repository.update(testData.copy(testData.testEntity1).apply { deletedAt = testData.now() })
-            assertNull(service.get(testData.testEntity1.id!!))
+            assertNull(service.get(testData.testEntity1.id!!, testData.testParameters))
         }
     }
 
@@ -249,10 +223,10 @@ abstract class CRUDServiceTest<
         fun testUpdateNotFound() {
             val id = testData.randomId()
             val updateModel = testData.entityToUpdateModelWithModifications(testData.testEntity1)
-            val exception = assertThrows(CRUDErrorException::class.java) { service.update(id, updateModel) }
+            val exception = assertThrows(CRUDErrorException::class.java) { service.update(id, updateModel, testData.testParameters) }
 
             val actual = exception.error
-            val expected = CRUDError(HttpStatus.NOT_FOUND, "$typeName with id $id is not found.")
+            val expected = CRUDError(HttpStatus.NOT_FOUND, "${testData.typeName} with id $id is not found.")
 
             assertEquals(expected, actual)
         }
@@ -263,10 +237,10 @@ abstract class CRUDServiceTest<
             testData.repository.entities[testData.testEntity2.id!!] = testData.copy(testData.testEntity1).apply { id = testData.testEntity2.id }
             val updateModel = testData.entityToUpdateModelWithNoModifications(testData.testEntity1)
             val exception =
-                assertThrows(CRUDErrorException::class.java) { service.update(testData.testEntity2.id!!, updateModel) }
+                assertThrows(CRUDErrorException::class.java) { service.update(testData.testEntity2.id!!, updateModel, testData.testParameters) }
 
             val actual = exception.error
-            val expected = CRUDError(HttpStatus.CONFLICT, "$typeName with $updateModel already exists.")
+            val expected = CRUDError(HttpStatus.CONFLICT, "${testData.typeName} with $updateModel already exists.")
 
             assertEquals(expected, actual)
         }
@@ -278,7 +252,7 @@ abstract class CRUDServiceTest<
             val oneSecondLater = testData.now().plusSeconds(1)
             testData.instantProvider.adjust { it.plusSeconds(1) }
 
-            val actual = service.update(testData.testEntity1.id!!, updateModel)
+            val actual = service.update(testData.testEntity1.id!!, updateModel, testData.testParameters)
             val expected = mapper.entityToModel(
                 testData.copy(testData.testEntity1).apply {
                     mapper.updateEntityWith(this, updateModel)
@@ -289,9 +263,9 @@ abstract class CRUDServiceTest<
 
             assertEquals(expected, actual)
 
-            val foundEntity = testData.repository.findByIdAndDeletedAtIsNull(actual.id())?.let(mapper::entityToModel)
+            val found = service.get(actual.id(), testData.testParameters)
 
-            assertEquals(expected, foundEntity)
+            assertEquals(expected, found)
         }
 
         @DisplayName("should update with the same data of a deleted entity return updated entity")
@@ -302,7 +276,7 @@ abstract class CRUDServiceTest<
             val oneSecondLater = testData.now().plusSeconds(1)
             testData.instantProvider.adjust { it.plusSeconds(1) }
 
-            val actual = service.update(testData.testEntity1.id!!, updateModel)
+            val actual = service.update(testData.testEntity1.id!!, updateModel, testData.testParameters)
             val expected = mapper.entityToModel(
                 testData.copy(testData.testEntity1).apply {
                     mapper.updateEntityWith(this, updateModel)
@@ -313,9 +287,9 @@ abstract class CRUDServiceTest<
 
             assertEquals(expected, actual)
 
-            val foundEntity = testData.repository.findByIdAndDeletedAtIsNull(actual.id())?.let(mapper::entityToModel)
+            val found = service.get(actual.id(), testData.testParameters)
 
-            assertEquals(expected, foundEntity)
+            assertEquals(expected, found)
         }
     }
 
@@ -327,10 +301,10 @@ abstract class CRUDServiceTest<
         @Test
         fun testDeleteNotFound() {
             val id = testData.randomId()
-            val exception = assertThrows(CRUDErrorException::class.java) { service.delete(id) }
+            val exception = assertThrows(CRUDErrorException::class.java) { service.delete(id, testData.testParameters) }
 
             val actual = exception.error
-            val expected = CRUDError(HttpStatus.NOT_FOUND, "$typeName with id $id is not found.")
+            val expected = CRUDError(HttpStatus.NOT_FOUND, "${testData.typeName} with id $id is not found.")
 
             assertEquals(expected, actual)
         }
@@ -341,9 +315,9 @@ abstract class CRUDServiceTest<
             val oneSecondLater = testData.now().plusSeconds(1)
             testData.instantProvider.adjust { it.plusSeconds(1) }
 
-            service.delete(testData.testEntity1.id!!)
+            service.delete(testData.testEntity1.id!!, testData.testParameters)
 
-            assertNull(testData.repository.findByIdAndDeletedAtIsNull(testData.testEntity1.id!!))
+            assertNull(service.get(testData.testEntity1.id!!, testData.testParameters))
 
             val actual = testData.repository.entities[testData.testEntity1.id!!]?.let(mapper::entityToModel)
             val expected = mapper.entityToModel(
