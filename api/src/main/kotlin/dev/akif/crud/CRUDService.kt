@@ -20,13 +20,13 @@ import java.sql.SQLException
  *
  * This is meant to be extended from a **@Service** class.
  *
- * @param I          Id type of the data
- * @param M          Model type of the data which is a [CRUDModel]
- * @param E          Entity type of the data which is a [CRUDEntity]
- * @param CM         Create model type of the data which is a [CRUDCreateModel]
- * @param UM         Update model type of the data which is a [CRUDUpdateModel]
- * @param R          Repository type of the data which is a [CRUDRepository]
- * @param Mapper     Mapper type of the data which is a [CRUDMapper]
+ * @param I      Id type of the data
+ * @param M      Model type of the data which is a [CRUDModel]
+ * @param E      Entity type of the data which is a [CRUDEntity]
+ * @param CM     Create model type of the data which is a [CRUDCreateModel]
+ * @param UM     Update model type of the data which is a [CRUDUpdateModel]
+ * @param R      Repository type of the data which is a [CRUDRepository]
+ * @param Mapper Mapper type of the data which is a [CRUDMapper]
  *
  * @property typeName        Type name of the data this service manages
  * @property instantProvider [InstantProvider] dependency of this service

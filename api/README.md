@@ -534,7 +534,7 @@ This is a variant of CRUD where there is no distinction between a model and its 
 * There is one DTO type and it extends `SimpleDTO`. This means it is in-turn extending a `CRUDDTO`, a `CRUDCreateDTO` and a `CRUDUpdateDTO`.
 * There is one model type and it extends `SimpleModel`. This means it is in-turn extending a `CRUDModel`, a `CRUDCreateModel` and a `CRUDUpdateModel`.
 
-All other `CRUD*` compontents follow `Simple*` naming.
+All other `CRUD*` components follow `Simple*` naming.
 
 ### 2. [Simpler](src/main/kotlin/dev/akif/crud/simpler)
 
@@ -542,7 +542,7 @@ This is a variant that takes `Simple` a step further and removes the distinction
 
 * There is one model type and it extends `SimplerModel`. This means it is in-turn extending a `CRUDModel`, a `CRUDCreateModel`, a `CRUDUpdateModel`, a `CRUDDTO`, a `CRUDCreateDTO` and a `CRUDUpdateDTO`.
 
-All other `CRUD*` compontents follow `Simpler*` naming.
+All other `CRUD*` components follow `Simpler*` naming.
 
 ### 3. [Simplest](src/main/kotlin/dev/akif/crud/simplest)
 
@@ -550,6 +550,6 @@ This is a variant that takes `Simpler` a step further and removes the model as w
 
 * There is only the entity type and it extends `SimplestEntity`. This means it is in-turn extending a `CRUDEntity`, a `CRUDModel`, a `CRUDCreateModel`, a `CRUDUpdateModel`, a `CRUDDTO`, a `CRUDCreateDTO` and a `CRUDUpdateDTO`.
 
-All other `CRUD*` compontents follow `Simplest*` naming.
+All other `CRUD*` components follow `Simplest*` naming.
 
 The simplest variant is not recommended for a real-world application as it would lead to exposing your implementation and persistence details to the outside world via your entity type.

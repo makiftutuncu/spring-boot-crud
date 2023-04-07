@@ -6,7 +6,7 @@ spring-boot-crud is a library to help build CRUD applications easily with Spring
 
 | Latest Version | Java Version | Kotlin Version | Spring Boot Version |
 | -------------- | ------------ | -------------- | ------------------- |
-| 0.5.0          | 17           | 1.8.0          | 3.0.4               |
+| 0.5.0          | 17           | 1.8.0          | 3.0.5               |
 
 ## Table of Contents
 
