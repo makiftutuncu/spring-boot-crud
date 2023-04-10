@@ -23,8 +23,9 @@ import java.io.Serializable
  * @param S        Service type of the data which is a [CRUDService]
  * @param TestData Test data type of the data which is a [CRUDTestData]
  *
- * @property mapper   Mapper dependency of this test which is a [CRUDMapper]
- * @property testData Test data dependency of this test which is a [CRUDTestData]
+ * @property mapper       Mapper dependency of this test which is a [CRUDMapper]
+ * @property testData     Test data dependency of this test which is a [CRUDTestData]
+ * @property buildService Function to build a concrete instance of the service to be tested using given test dependencies
  */
 abstract class CRUDServiceTest<
         I : Serializable,
@@ -37,17 +38,9 @@ abstract class CRUDServiceTest<
         S : CRUDService<I, E, M, CM, UM, R, Mapper>,
         TestData : CRUDTestData<I, E, M, CM, UM, TestData>>(
     protected val mapper: Mapper,
-    protected val testData: TestData
+    protected val testData: TestData,
+    protected val buildService: (Mapper, TestData) -> S
 ) {
-    /**
-     * Build a concrete instance of the service to be tested using given test dependencies
-     *
-     * @param mapper   Instance of a [Mapper] as a dependency
-     * @param testData Instance of a [CRUDTestData] as a dependency
-     * @return Instance of the service to be tested, built using given test dependencies
-     */
-    protected abstract fun buildService(mapper: Mapper, testData: TestData): S
-
     /**
      * Instance of the service to be tested, this will be reset for each test method.
      *

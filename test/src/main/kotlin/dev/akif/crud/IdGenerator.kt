@@ -41,6 +41,7 @@ interface IdGenerator<I : Serializable> {
          * @param start Starting value of the ids
          * @return Built [IdGenerator]
          */
+        @JvmStatic
         fun sequential(start: Long): IdGenerator<Long> = object : IdGenerator<Long> {
             private var next: Long = start
 
