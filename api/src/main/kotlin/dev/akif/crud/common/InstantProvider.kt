@@ -30,7 +30,7 @@ interface InstantProvider {
          *
          * @return [InstantProvider] that uses [Clock.systemUTC] to provide the current instant
          */
-        @JvmStatic
+        @JvmField
         val utc: InstantProvider = clockBased(Clock.systemUTC())
     }
 }

@@ -1,5 +1,8 @@
 package dev.akif.crud
 
+import dev.akif.crud.common.Paged
+import dev.akif.crud.common.Parameters
+import org.springframework.data.domain.PageRequest
 import java.io.Serializable
 import java.time.Instant
 
@@ -12,7 +15,8 @@ import java.time.Instant
  * @param CM Create model type of the data which is a [CRUDCreateModel]
  * @param UM Update model type of the data which is a [CRUDUpdateModel]
  * @param TestData Test data type of the data which is a [CRUDTestData], meant to be the concrete type that extends this class
- * @param typeName Type name of the data
+ *
+ * @property typeName Type name of the data
  */
 abstract class CRUDTestData<
         I : Serializable,
@@ -20,24 +24,16 @@ abstract class CRUDTestData<
         M : CRUDModel<I>,
         CM : CRUDCreateModel,
         UM : CRUDUpdateModel,
-        TestData : CRUDTestData<I, E, M, CM, UM, TestData>>(typeName: String) {
+        TestData : CRUDTestData<I, E, M, CM, UM, TestData>>(val typeName: String) {
     /**
      * Instance of a [InMemoryCRUDRepository] containing test entities
      */
-    @Suppress("UNCHECKED_CAST")
-    val repository: InMemoryCRUDRepository<I, E, CM, TestData> by lazy {
-        InMemoryCRUDRepository(typeName, this as TestData)
-    }
+    abstract val repository: InMemoryCRUDRepository<I, E, CM, TestData>
 
     /**
-     * Instant provider to use in tests
+     * Instance of an [IdGenerator] to use in tests
      */
-    val instantProvider: AdjustableInstantProvider = AdjustableInstantProvider()
-
-    /**
-     * Now instant to use in tests
-     */
-    fun now(): Instant = instantProvider.now()
+    abstract val idGenerator: IdGenerator<I>
 
     /**
      * First test entity
@@ -60,19 +56,28 @@ abstract class CRUDTestData<
     abstract val moreTestEntities: Array<E>
 
     /**
+     * Entities that are returned in the first page while listing with default pagination parameters
+     */
+    abstract val defaultFirstPageEntities: List<E>
+
+    /**
+     * [Pair]s of [PageRequest] and [Paged] as test cases for pagination
+     * where the [Paged] is the expected result for the given [PageRequest]
+     */
+    abstract val paginationTestCases: List<Pair<PageRequest, Paged<E>>>
+
+    /**
+     * Default [Parameters] to use in tests
+     */
+    abstract val testParameters: Parameters
+
+    /**
      * Copies an entity
      *
      * @param entity Entity to copy
      * @return Copied entity
      */
     abstract fun copy(entity: E): E
-
-    /**
-     * Function to generate a random id
-     *
-     * @return Generated random id
-     */
-    abstract fun randomId(): I
 
     /**
      * Check if two entities are duplicates, this should reflect your unique constraint on the DB
@@ -106,4 +111,24 @@ abstract class CRUDTestData<
      * @return Update model built from given entity with some modifications
      */
     abstract fun entityToUpdateModelWithModifications(entity: E): UM
+
+    /**
+     * Instant provider to use in tests
+     */
+    val instantProvider: AdjustableInstantProvider =
+        AdjustableInstantProvider()
+
+    /**
+     * Now instant to use in tests
+     */
+    fun now(): Instant =
+        instantProvider.now()
+
+    /**
+     * Function to generate a random id
+     *
+     * @return Generated random id
+     */
+    fun randomId(): I =
+        idGenerator.random()
 }

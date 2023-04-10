@@ -10,22 +10,10 @@ import java.time.Instant
  *
  * @param I Id type of the data
  */
-abstract class SimplestEntity<I : Serializable>(
-    override var id: I? = null,
-    override var version: Int? = null,
-    override var createdAt: Instant? = null,
-    override var updatedAt: Instant? = null,
-    override var deletedAt: Instant? = null
-) : CRUDEntity<I>(
-    id,
-    version,
-    createdAt,
-    updatedAt,
-    deletedAt
-), CRUDModel<I>, CRUDCreateModel, CRUDUpdateModel, CRUDDTO<I>, CRUDCreateDTO, CRUDUpdateDTO {
-    override fun id(): I = requireNotNull(id) { "id was null." }
-    override fun version(): Int = requireNotNull(version) { "version was null." }
-    override fun createdAt(): Instant = requireNotNull(createdAt) { "createdAt was null." }
-    override fun updatedAt(): Instant = requireNotNull(updatedAt) { "updatedAt was null." }
+abstract class SimplestEntity<I : Serializable> : CRUDEntity<I>(), CRUDModel<I>, CRUDCreateModel, CRUDUpdateModel, CRUDDTO<I>, CRUDCreateDTO, CRUDUpdateDTO {
+    override fun id(): I = requireNotNull(id) { "id is required." }
+    override fun version(): Int = requireNotNull(version) { "version is required." }
+    override fun createdAt(): Instant = requireNotNull(createdAt) { "createdAt is required." }
+    override fun updatedAt(): Instant = requireNotNull(updatedAt) { "updatedAt is required." }
     override fun deletedAt(): Instant? = deletedAt
 }

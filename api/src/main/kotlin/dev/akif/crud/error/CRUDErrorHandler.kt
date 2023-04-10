@@ -42,7 +42,7 @@ interface CRUDErrorHandler {
 
     /** @suppress */
     companion object {
-        @JvmStatic
+        @JvmField
         val log: Logger = LoggerFactory.getLogger(CRUDErrorHandler::class.java)
     }
 }

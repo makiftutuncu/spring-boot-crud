@@ -31,7 +31,7 @@ interface CRUDRepository<I : Serializable, E : CRUDEntity<I>> : Repository<E, I>
      * Finds an entity with given id and deletion flag
      *
      * @param id Id of the entity to find
-     * @return Found entity in an [Optional]
+     * @return Found entity or null if it is not found
      */
     fun findByIdAndDeletedAtIsNull(id: I): E?
 

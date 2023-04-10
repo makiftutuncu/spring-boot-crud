@@ -11,12 +11,25 @@ import org.springframework.web.bind.annotation.RestController
 import java.time.Instant
 import jakarta.persistence.Entity as JakartaEntity
 import dev.akif.crud.CRUDTestData
+import dev.akif.crud.common.Paged
+import dev.akif.crud.common.Parameters
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import java.util.UUID
 
-class FooTestData : CRUDTestData<UUID, FooEntity, Foo, CreateFoo, UpdateFoo, FooTestData>(typeName = "Foo") {
+object InMemoryFooRepository: InMemoryCRUDRepository<UUID, FooEntity, CreateFoo, FooTestData>(FooTestData), FooRepository
+
+object FooTestData : CRUDTestData<UUID, FooEntity, Foo, CreateFoo, UpdateFoo, FooTestData>(typeName = "Foo") {
     private val fooId1 = UUID.randomUUID()
     private val fooId2 = UUID.randomUUID()
     private val fooId3 = UUID.randomUUID()
+
+    override val repository: InMemoryCRUDRepository<UUID, FooEntity, CreateFoo, FooTestData>
+        get() = InMemoryFooRepository
+
+    override val idGenerator: IdGenerator<UUID> =
+        IdGenerator.uuid
 
     override val testEntity1: FooEntity =
         FooEntity(
@@ -54,6 +67,33 @@ class FooTestData : CRUDTestData<UUID, FooEntity, Foo, CreateFoo, UpdateFoo, Foo
     override val moreTestEntities: Array<FooEntity> =
         emptyArray()
 
+    override val defaultFirstPageEntities: List<FooEntity> =
+        listOf(
+            testEntity1,
+            testEntity2,
+            testEntity3
+        )
+
+    override val paginationTestCases: List<Pair<PageRequest, Paged<FooEntity>>> =
+        listOf(
+            PageRequest.of(0, 2) to Paged(
+                data = listOf(testEntity1, testEntity2),
+                page = 0,
+                perPage = 2,
+                totalPages = 2
+            ),
+            PageRequest.of(1, 2) to Paged(
+                data = listOf(testEntity3),
+                page = 1,
+                perPage = 2,
+                totalPages = 2
+            ),
+            PageRequest.of(2, 2) to Paged.empty(page = 2, perPage = 2, totalPages = 2)
+        )
+
+    override val testParameters: Parameters =
+        Parameters.empty
+
     override fun areDuplicates(e1: FooEntity, e2: FooEntity): Boolean =
         e1.foo == e2.foo && e1.bar == e2.bar
 
@@ -67,9 +107,6 @@ class FooTestData : CRUDTestData<UUID, FooEntity, Foo, CreateFoo, UpdateFoo, Foo
             updatedAt = entity.updatedAt,
             deletedAt = entity.deletedAt
         )
-
-    override fun randomId(): UUID =
-        UUID.randomUUID()
 
     override fun entityToCreateModel(entity: FooEntity): CreateFoo =
         CreateFoo(
@@ -101,14 +138,26 @@ class FooController(service: FooService, mapper: FooMapper): CRUDController<UUID
 @Service
 class FooService(
     instantProvider: InstantProvider,
-    repository: CRUDRepository<UUID, FooEntity>,
+    repository: FooRepository,
     mapper: FooMapper
 ): CRUDService<UUID, FooEntity, Foo, CreateFoo, UpdateFoo, FooRepository, FooMapper>(
     typeName = "Foo",
     instantProvider = instantProvider,
-    crudRepository = repository,
+    repository = repository,
     mapper = mapper
-)
+) {
+    override fun createUsingRepository(entity: FooEntity, parameters: Parameters): FooEntity =
+        repository.save(entity)
+
+    override fun listUsingRepository(pageable: Pageable, parameters: Parameters): Page<FooEntity> =
+        repository.findAllByDeletedAtIsNull(pageable)
+
+    override fun getUsingRepository(id: UUID, parameters: Parameters): FooEntity? =
+        repository.findByIdAndDeletedAtIsNull(id)
+
+    override fun updateUsingRepository(entity: FooEntity, parameters: Parameters): Int =
+        repository.update(entity)
+}
 
 @Component
 class FooMapper: CRUDMapper<UUID, FooEntity, Foo, CreateFoo, UpdateFoo>, CRUDDTOMapper<UUID, Foo, FooDTO, CreateFoo, UpdateFoo, CreateFooDTO, UpdateFooDTO> {
@@ -125,12 +174,12 @@ class FooMapper: CRUDMapper<UUID, FooEntity, Foo, CreateFoo, UpdateFoo>, CRUDDTO
 
     override fun entityToModel(entity: FooEntity): Foo =
         Foo(
-            id = requireNotNull(entity.id) { "id was null." },
-            foo = requireNotNull(entity.foo) { "foo was null." },
-            bar = requireNotNull(entity.bar) { "bar was null." },
-            version = requireNotNull(entity.version) { "version was null." },
-            createdAt = requireNotNull(entity.createdAt) { "createdAt was null." },
-            updatedAt = requireNotNull(entity.updatedAt) { "updatedAt was null." },
+            id = requireNotNull(entity.id) { "id is required." },
+            foo = requireNotNull(entity.foo) { "foo is required." },
+            bar = requireNotNull(entity.bar) { "bar is required." },
+            version = requireNotNull(entity.version) { "version is required." },
+            createdAt = requireNotNull(entity.createdAt) { "createdAt is required." },
+            updatedAt = requireNotNull(entity.updatedAt) { "updatedAt is required." },
             deletedAt = entity.deletedAt
         )
 
@@ -141,13 +190,13 @@ class FooMapper: CRUDMapper<UUID, FooEntity, Foo, CreateFoo, UpdateFoo>, CRUDDTO
         }
     }
 
-    override fun createDTOToCreateModel(createDTO: CreateFooDTO): CreateFoo =
+    override fun createDTOToCreateModel(createDTO: CreateFooDTO, parameters: Parameters): CreateFoo =
         CreateFoo(
             foo = createDTO.foo,
             bar = createDTO.bar
         )
 
-    override fun modelToDTO(model: Foo): FooDTO =
+    override fun modelToDTO(model: Foo, parameters: Parameters): FooDTO =
         FooDTO(
             id = model.id,
             foo = model.foo,
@@ -156,7 +205,7 @@ class FooMapper: CRUDMapper<UUID, FooEntity, Foo, CreateFoo, UpdateFoo>, CRUDDTO
             updatedAt = model.updatedAt
         )
 
-    override fun updateDTOToUpdateModel(updateDTO: UpdateFooDTO): UpdateFoo =
+    override fun updateDTOToUpdateModel(updateDTO: UpdateFooDTO, parameters: Parameters): UpdateFoo =
         UpdateFoo(
             foo = updateDTO.foo,
             bar = updateDTO.bar
@@ -168,14 +217,14 @@ interface FooRepository: CRUDRepository<UUID, FooEntity>
 
 @JakartaEntity
 class FooEntity(
-    @Id override var id: UUID? = null,
-    var foo: String? = null,
-    var bar: Int? = null,
-    override var version: Int? = null,
-    override var createdAt: Instant? = null,
-    override var updatedAt: Instant? = null,
-    override var deletedAt: Instant? = null
-): CRUDEntity<UUID>(id, version, createdAt, updatedAt, deletedAt) {
+    @Id override var id: UUID?,
+    var foo: String?,
+    var bar: Int?,
+    override var version: Int?,
+    override var createdAt: Instant?,
+    override var updatedAt: Instant?,
+    override var deletedAt: Instant?
+): CRUDEntity<UUID>() {
     override fun toString(): String =
         "FooEntity(id=$id, foo=$foo, bar=$bar, version=$version, createdAt=$createdAt, updatedAt=$updatedAt, deletedAt=$deletedAt)"
 }

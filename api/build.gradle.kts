@@ -15,7 +15,7 @@ plugins {
 }
 
 val junitVersion = "5.9.2"
-val springBootVersion = "3.0.3"
+val springBootVersion = "3.0.5"
 val springdocVersion = "2.0.2"
 
 dependencies {

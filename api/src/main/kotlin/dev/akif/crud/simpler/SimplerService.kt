@@ -1,6 +1,5 @@
 package dev.akif.crud.simpler
 
-import dev.akif.crud.CRUDRepository
 import dev.akif.crud.CRUDService
 import dev.akif.crud.common.InstantProvider
 import java.io.Serializable
@@ -24,6 +23,6 @@ abstract class SimplerService<
         out Mapper : SimplerMapper<I, E, M>>(
     override val typeName: String,
     override val instantProvider: InstantProvider,
-    crudRepository: CRUDRepository<I, E>,
+    override val repository: R,
     override val mapper: Mapper
-) : CRUDService<I, E, M, M, M, R, Mapper>(typeName, instantProvider, crudRepository, mapper)
+) : CRUDService<I, E, M, M, M, R, Mapper>(typeName, instantProvider, repository, mapper)
