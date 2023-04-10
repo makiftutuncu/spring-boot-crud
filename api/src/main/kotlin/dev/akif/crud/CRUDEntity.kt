@@ -1,7 +1,7 @@
 package dev.akif.crud
 
-import jakarta.persistence.Id
 import jakarta.persistence.MappedSuperclass
+import org.hibernate.Hibernate
 import java.io.Serializable
 import java.time.Instant
 
@@ -18,14 +18,23 @@ import java.time.Instant
  * deleted entities should be treated as if they don't exist at all
  */
 @MappedSuperclass
-abstract class CRUDEntity<I : Serializable>(
-    @Id open var id: I? = null,
-    open var version: Int? = null,
-    open var createdAt: Instant? = null,
-    open var updatedAt: Instant? = null,
-    open var deletedAt: Instant? = null
-) {
+abstract class CRUDEntity<I : Serializable> {
+    abstract var id: I?
+    abstract var version: Int?
+    abstract var createdAt: Instant?
+    abstract var updatedAt: Instant?
+    abstract var deletedAt: Instant?
+
     /** @suppress */
-    override fun toString(): String =
-        "CRUDEntity(id=$id, version=$version, createdAt=$createdAt, updatedAt=$updatedAt, deletedAt=$deletedAt)"
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other == null || Hibernate.getClass(this) != Hibernate.getClass(other)) return false
+        if (other !is CRUDEntity<*>) return false
+        return id == other.id
+    }
+
+    /** @suppress */
+    override fun hashCode(): Int {
+        return javaClass.hashCode()
+    }
 }

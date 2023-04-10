@@ -1,5 +1,6 @@
 package dev.akif.crud
 
+import dev.akif.crud.common.Parameters
 import java.io.Serializable
 
 /**
@@ -25,23 +26,26 @@ interface CRUDDTOMapper<
      * Mapper to convert from model to DTO
      *
      * @param model Model to convert
+     * @param parameters [Parameters] to use in conversion
      * @return DTO built from given model
      */
-    fun modelToDTO(model: M): D
+    fun modelToDTO(model: M, parameters: Parameters): D
 
     /**
      * Mapper to convert given create DTO to a create model
      *
      * @param createDTO Create DTO to convert
+     * @param parameters [Parameters] to use in conversion
      * @return Create model built from this create DTO
      */
-    fun createDTOToCreateModel(createDTO: CD): CM
+    fun createDTOToCreateModel(createDTO: CD, parameters: Parameters): CM
 
     /**
      * Mapper to convert given update DTO to a update model
      *
      * @param updateDTO Update DTO to convert
+     * @param parameters [Parameters] to use in conversion
      * @return Create model built from this update DTO
      */
-    fun updateDTOToUpdateModel(updateDTO: UD): UM
+    fun updateDTOToUpdateModel(updateDTO: UD, parameters: Parameters): UM
 }

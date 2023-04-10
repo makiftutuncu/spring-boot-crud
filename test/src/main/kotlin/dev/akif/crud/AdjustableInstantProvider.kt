@@ -37,7 +37,6 @@ class AdjustableInstantProvider(
 
     /** @suppress */
     companion object {
-        @JvmStatic
         private val log: Logger = LoggerFactory.getLogger(AdjustableInstantProvider::class.java)
     }
 }

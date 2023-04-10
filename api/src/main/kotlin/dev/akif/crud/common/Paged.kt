@@ -1,6 +1,8 @@
 package dev.akif.crud.common
 
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
+import org.springframework.data.domain.Pageable
 
 /**
  * Container of paged data with its pagination info
@@ -32,6 +34,14 @@ data class Paged<out A>(
     )
 
     /**
+     * Constructor to build a [Paged] from a list of data, applying given pagination
+     *
+     * @param data     Data to page
+     * @param pageable Requested pagination info
+     */
+    constructor(data: List<A>, pageable: Pageable) : this(PageImpl<A>(data, pageable, data.size.toLong()))
+
+    /**
      * Builds a new [Paged] by converting every item in this by given mapping function
      *
      * @param B      Type to which mapping function converts
@@ -59,5 +69,15 @@ data class Paged<out A>(
         @JvmStatic
         fun <A> empty(page: Int, perPage: Int, totalPages: Int): Paged<A> =
             Paged(emptyList(), page, perPage, totalPages)
+
+        /**
+         * Builds an empty [Paged]
+         *
+         * @param pageable Requested pagination info
+         * @return Empty [Paged] with given pagination info
+         */
+        @JvmStatic
+        fun <A> empty(pageable: Pageable): Paged<A> =
+            Paged(emptyList(), pageable.pageNumber, pageable.pageSize, 0)
     }
 }

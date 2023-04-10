@@ -6,10 +6,7 @@ import java.util.UUID
 
 @DisplayName("FooService")
 class FooServiceTest: CRUDServiceTest<UUID, FooEntity, Foo, CreateFoo, UpdateFoo, FooMapper, FooRepository, FooService, FooTestData>(
-    typeName = "Foo",
     mapper = FooMapper(),
-    testData = FooTestData()
-) {
-    override fun buildService(mapper: FooMapper, testData: FooTestData): FooService =
-        FooService(testData.instantProvider, testData.repository, mapper)
-}
+    testData = FooTestData,
+    buildService = { mapper, testData -> FooService(testData.instantProvider, InMemoryFooRepository, mapper) }
+)
