@@ -3,7 +3,6 @@
 
 spring-boot-crud is a library to help build CRUD applications easily with Spring Boot. As a developer, you probably wrote simple CRUD applications many times and wished you could get rid of most of that boilerplate around designing the APIs, services, repositories, etc. It is repetitive, boring and error-prone. spring-boot-crud offers an abstract and opinionated way to avoid most of this. You only need to care about your data models. After defining data models and a few other glue types, you get a full-featured CRUD application (and its tests!) for free. The library is highly generic and abstract. It utilizes type parameters and type constraints for additional type-safety while enforcing some best practices.
 
-
 | Latest Version | Java Version | Kotlin Version | Spring Boot Version |
 | -------------- | ------------ | -------------- | ------------------- |
 | 0.5.0          | 17           | 1.8.0          | 3.0.5               |
@@ -28,8 +27,6 @@ spring-boot-crud consists of 2 modules. You can click on a module for more infor
 
 ## Examples
 
-TODO: Add real-world example projects here.
-
 There are template projects you can use to create new repositories on GitHub with an existing project setup using spring-boot-crud.
 
 * https://github.com/makiftutuncu/kotlin-spring-boot-template
@@ -53,7 +50,7 @@ Artifacts of this project are published to Maven Central along with their source
 
 ## Contributing
 
-All contributions are welcome, including requests to feature your project using this library. Please feel free to send a pull request. Thank you.
+All contributions are welcome, including requests to highlight your project using this library. Please feel free to send a pull request. Thank you.
 
 ## License
 

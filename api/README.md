@@ -8,6 +8,7 @@ This is the API module of spring-boot-crud. It brings support for classes to bui
 1. [Getting Started](#getting-started)
 2. [Contents](#contents)
 3. [Variants](#variants)
+4. [Extending the Domain](#extending-the-domain)
 
 ## Getting Started
 
@@ -83,15 +84,15 @@ import java.lang.UUID
 @Entity
 @Table(name = "cats")
 class CatEntity(
-    @Id override var id: UUID? = null,
-    var name: String? = null,
-    var breed: String? = null,
-    var age: Int? = null,
-    override var version: Int? = null,
-    override var createdAt: Instant? = null,
-    override var updatedAt: Instant? = null,
-    override var deletedAt: Instant? = null
-): CRUDEntity<UUID, CatEntity>(id, version, createdAt, updatedAt, deletedAt) {
+    @Id override var id: UUID?,
+    var name: String?,
+    var breed: String?,
+    var age: Int?,
+    override var version: Int?,
+    override var createdAt: Instant?,
+    override var updatedAt: Instant?,
+    override var deletedAt: Instant?
+): CRUDEntity<UUID>() {
     override fun toString(): String =
         "CatEntity(id=$id, name=$name, breed=$breed, age=$age, version=$version, createdAt=$createdAt, updatedAt=$updatedAt, deletedAt=$deletedAt)"
 }
@@ -102,7 +103,6 @@ Please note:
 * We need at least `@Entity` annotation to be compatible with JPA.
 * spring-boot-crud-api enforces to have `id`, `version`, `createdAt`, `updatedAt` and `deletedAt` fields.
 * All fields need to be nullable `var`s to be compatible with JPA.
-* To be compatible with JPA, we need all fields should have a default value set as ` = null` in the constructor definition (or a no-args constructor).
 * Having a `toString` helps in logging and debugging.
 * We **cannot** use a data class for our entity.
 
@@ -135,7 +135,7 @@ data class Cat(
 Please note:
 
 * We should use a **data class**.
-* The library also supports Java clients so to support records in Java implementations. That's why it defines `id()`, `version()`, `createdAt()`, `updatedAt()` and `deletedAt()` methods (so in Java the model can be defined using records in a similar way to Kotlin's data classes). Java records would implement them automatically but they need to be overridden in Kotlin.
+* The library also supports Java clients so to support records in Java implementations. That's why it defines `id()`, `version()`, `createdAt()`, `updatedAt()` and `deletedAt()` methods (so in Java, the model can be defined using records in a similar way to Kotlin's data classes). Java records would implement them automatically, but they need to be overridden in Kotlin.
 * `deletedAt` is **nullable** because for non-deleted data, it will be `null`.
 
 ##### 1.2.1. [CRUDCreateModel](src/main/kotlin/dev/akif/crud/CRUDCreateModel.kt)
@@ -212,7 +212,7 @@ So far, we defined our data models but we also need ways to convert between them
 
 #### 2.1. [CRUDMapper](src/main/kotlin/dev/akif/crud/CRUDMapper.kt)
 
-In order to be able to convert between concrete types an entity and model, we need a mapper which extends `CRUDMapper`. It can be implemented as:
+In order to be able to convert between concrete types of an entity and model, we need a mapper which extends `CRUDMapper`. It can be implemented as:
 
 ```kotlin
 import dev.akif.crud.*
@@ -257,13 +257,13 @@ class CatMapper: CRUDMapper<UUID, CatEntity, Cat, CreateCat, UpdateCat> {
 Please note:
 
 * It needs `@Component` to be discoverable by Spring Boot.
-* In `entityToBeCreatedFrom`, we fill in the properties we know from a create model and we use default initial values for the other properties in order to set all fields of our entity. This involves giving the entity an id as well. Picking `UUID` as our id type let us create this without the need for a DB query.
+* In `entityToBeCreatedFrom`, we fill in the properties we know from a create model and we use default initial values for the other properties in order to set all fields of our entity. This involves giving the entity an id as well. Picking `UUID` as our id type let us create this without the need for a DB query. For other id types, we would set the value to `null` and it would be set by Hibernate later by a separate DB operation.
 * In `entityToModel`, we would need to convert from nullable values to non-nullable values. Using Kotlin's non-null assertion `!!` is possible but being a little more explicit by having `requireNotNull` calls is more helpful.
 * `updateEntityWith` is a side-effectful method to update data of given entity from given update model. Only update properties that exist in update model because the rest of required updates are taken care of by the library.
 
 #### 2.2. [CRUDDTOMapper](src/main/kotlin/dev/akif/crud/CRUDDTOMapper.kt)
 
-Similar to mapper, in order to be able to convert between concrete types a model and a DTO, we need a mapper which extends `CRUDDTOMapper`. It can be a separate component be implemented as:
+Similar to mapper, in order to be able to convert between concrete types of a model and a DTO, we need a mapper which extends `CRUDDTOMapper`. It can be a separate component be implemented as:
 
 ```kotlin
 import dev.akif.crud.*
@@ -272,14 +272,14 @@ import java.util.UUID
 
 @Component
 class CatDTOMapper: CRUDDTOMapper<UUID, Cat, CatDTO, CreateCat, UpdateCat, CreateCatDTO, UpdateCatDTO> {
-    override fun createDTOToCreateModel(createDTO: CreateCatDTO): CreateCat =
+    override fun createDTOToCreateModel(createDTO: CreateCatDTO, parameters: Parameters): CreateCat =
         CreateCat(
             name = createDTO.name,
             breed = createDTO.breed,
             age = createDTO.age
         )
 
-    override fun modelToDTO(model: Cat): CatDTO =
+    override fun modelToDTO(model: Cat, parameters: Parameters): CatDTO =
         CatDTO(
             id = model.id,
             name = model.name,
@@ -289,7 +289,7 @@ class CatDTOMapper: CRUDDTOMapper<UUID, Cat, CatDTO, CreateCat, UpdateCat, Creat
             updatedAt = model.updatedAt
         )
 
-    override fun updateDTOToUpdateModel(updateDTO: UpdateCatDTO): UpdateCat =
+    override fun updateDTOToUpdateModel(updateDTO: UpdateCatDTO, parameters: Parameters): UpdateCat =
         UpdateCat(
             name = updateDTO.name,
             age = updateDTO.age
@@ -298,6 +298,10 @@ class CatDTOMapper: CRUDDTOMapper<UUID, Cat, CatDTO, CreateCat, UpdateCat, Creat
 ```
 
 It may also be preferable to have the same mapper type extend both `CRUDMapper` and `CRUDDTOMapper` for simplicity but for now let's write each component separately.
+
+Please note:
+
+* [Parameters](../api/src/main/kotlin/dev/akif/crud/common/Parameters.kt) is a container type that has path and query parameters extracted from the HTTP request. It is provided in the DTO mapper so you can use such values during the conversions.
 
 ### 3. Repositories
 
@@ -318,11 +322,11 @@ interface CatRepository: CRUDRepository<UUID, CatEntity>
 
 This repository extends from `JpaRepository` and brings the abilities to do:
 
-| Description                                                  | Method                                         | SQL Equivalent                                               |
-| ------------------------------------------------------------ | ---------------------------------------------- | ------------------------------------------------------------ |
-| Find all cats with pagination                                | `findAllByDeletedAtIsNull(pageable: Pageable)` | `SELECT * FROM cats LIMIT {limit} OFFSET {offset}`           |
-| Find one cat by its id                                       | `findByIdAndDeletedAtIsNull(id: UUID)`         | `SELECT * FROM cats WHERE id = {id}`                         |
-| Create a new cat                                             | `save(cat: Cat)`                               | `INSERT INTO cats(id, version, created_at, updated_at, deleted_at, name, breed, age) VALUES({id}, {version}, {created_at}, {updated_at}, {deleted_at}, {name}, {breed}, {age})` |
+| Description                                                                             | Method                                         | SQL Equivalent                                                                                                                                                                                                             |
+|-----------------------------------------------------------------------------------------|------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Find all cats with pagination                                                           | `findAllByDeletedAtIsNull(pageable: Pageable)` | `SELECT * FROM cats WHERE deleted_at = NULL LIMIT {limit} OFFSET {offset}`                                                                                                                                                 |
+| Find one cat by its id                                                                  | `findByIdAndDeletedAtIsNull(id: UUID)`         | `SELECT * FROM cats WHERE id = {id} AND deleted_at = NULL`                                                                                                                                                                 |
+| Create a new cat                                                                        | `save(cat: Cat)`                               | `INSERT INTO cats(id, version, created_at, updated_at, deleted_at, name, breed, age) VALUES({id}, {version}, {created_at}, {updated_at}, {deleted_at}, {name}, {breed}, {age})`                                            |
 | Update a cat using optimistic locking (also used for deletion a cat with soft-deletion) | `update(cat: Cat)`                             | `UPDATE cats SET id = {id}, version = {version + 1}, created_at = {created_at}, updated_at = {updated_at}, deleted_at = {deleted_at}, name = {name}, breed = {breed}, age = {age} WHERE id = {id} AND version = {version}` |
 
 Please note that it needs `@Repository` to be discoverable by Spring Boot.
@@ -343,21 +347,33 @@ import java.util.UUID
 @Service
 class CatService(
     instantProvider: InstantProvider,
-    crudRepository: CRUDRepository<UUID, CatEntity>,
+    repository: CatRepository,
     mapper: CatMapper
 ): CRUDService<UUID, CatEntity, Cat, CreateCat, UpdateCat, CatRepository, CatMapper>(
     typeName = "Cat",
     instantProvider = instantProvider,
-    crudRepository = crudRepository,
+    repository = repository,
     mapper = mapper
-)
+) {
+    override fun createUsingRepository(entity: CatEntity, parameters: Parameters): CatEntity =
+        repository.save(entity)
+
+    override fun getUsingRepository(id: UUID, parameters: Parameters): CatEntity? =
+        repository.findByIdAndDeletedAtIsNull(id)
+
+    override fun listUsingRepository(pageable: Pageable, parameters: Parameters): Page<CatEntity> =
+        repository.findAllByDeletedAtIsNull(pageable)
+
+    override fun updateUsingRepository(entity: CatEntity, parameters: Parameters): Int =
+        repository.update(entity)
+}
 ```
 
 Please note:
 
 * It needs `@Service` to be discoverable by Spring Boot.
-* Super constructor requires a `CRUDRepository<UUID, CatEntity>` instead of `CatRepository`. This is a compromise to let tests replace this dependency with an in-memory implementation. While it is valid to inject `CatRepository` on line #8 above to your `CatService`, you should still use `CRUDRepository<UUID, CatEntity>` type in order not to tie the construction of this service to your specific `CatRepository` type.
 * `typeName` here is used in logs. It should be a constant String describing your entity so singular type name `Cat` is a good choice.
+* `*UsingRepository` methods are there to let you customize the interaction with repositories. This is especially useful if you need to extract and use values from provided `Parameters` or when you have custom methods in your repositories that you'd like to call.
 
 ### 5. Controllers
 
@@ -385,13 +401,13 @@ class CatController(
 ```
 This will bring the implementations of following endpoints.
 
-| HTTP Method | URI Path                              | Input                                                        | Output                                                       |
-| ----------- | ------------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| `POST`      | `/cats`                               | A `CreateCatDTO` as Json payload in request body             | <ul><li>`201 Created` with `CatDTO` when successful</li><li>`409 Conflict` with `CRUDError` when a cat with given data already exists</li></ul> |
-| `GET`       | `/cats?page={page}&perPage={perPage}` | <ul><li>`page` query parameter for the requested page number</li><li>`perPage` query parameter for the number of items requested in a page</li></ul> | `200 Ok` with `Paged<CatDTO>` with the requested page of cats |
-| `GET`       | `/cats/{id}`                          | `id` of the cat as a path parameter                          | <ul><li>`200 Ok` with `CatDTO` when successful</li><li>`404 Not Found` with `CRUDError` when cat with given id is not found</li></ul> |
-| `PUT`       | `/cats/{id}`                          | <ul><li>`id` of the cat as a path parameter</li><li>A `UpdateCatDTO` as Json payload in request body</li></ul> | <ul><li>`200 Ok` with `CatDTO` when successful</li><li>`404 Not Found` with `CRUDError` when cat with given id is not found</li><li>`409 Conflict` with `CRUDError` when a cat with given data already exists</li></ul> |
-| `DELETE`    | `/cats/{id}`                          | `id` of the cat as a path parameter                          | `204 No Content` with no body                                |
+| HTTP Method | URI Path                              | Input                                                                                                                                                | Output                                                                                                                                                                                                                  |
+|-------------|---------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `POST`      | `/cats`                               | A `CreateCatDTO` as Json payload in request body                                                                                                     | <ul><li>`201 Created` with `CatDTO` when successful</li><li>`409 Conflict` with `CRUDError` when a cat with given data already exists</li></ul>                                                                         |
+| `GET`       | `/cats?page={page}&perPage={perPage}` | <ul><li>`page` query parameter for the requested page number</li><li>`perPage` query parameter for the number of items requested in a page</li></ul> | `200 Ok` with `Paged<CatDTO>` with the requested page of cats                                                                                                                                                           |
+| `GET`       | `/cats/{id}`                          | `id` of the cat as a path parameter                                                                                                                  | <ul><li>`200 Ok` with `CatDTO` when successful</li><li>`404 Not Found` with `CRUDError` when cat with given id is not found</li></ul>                                                                                   |
+| `PUT`       | `/cats/{id}`                          | <ul><li>`id` of the cat as a path parameter</li><li>A `UpdateCatDTO` as Json payload in request body</li></ul>                                       | <ul><li>`200 Ok` with `CatDTO` when successful</li><li>`404 Not Found` with `CRUDError` when cat with given id is not found</li><li>`409 Conflict` with `CRUDError` when a cat with given data already exists</li></ul> |
+| `DELETE`    | `/cats/{id}`                          | `id` of the cat as a path parameter                                                                                                                  | `204 No Content` with no body                                                                                                                                                                                           |
 
 Here [CRUDError](src/main/kotlin/dev/akif/crud/error/CRUDError.kt) type is the error model and [Paged](src/main/kotlin/dev/akif/crud/common/Paged.kt) type is the wrapper model for paged data.
 
@@ -407,7 +423,7 @@ We almost completed our CRUD application making use of spring-boot-crud-api. The
 
 #### 6.1. [InstantProvider](src/main/kotlin/dev/akif/crud/common/InstantProvider.kt)
 
-If you check again, our `CatService` requires an `InstantProvider` instance as a dependency. This is required to get the current `java.time.Instant` for dealing with `createdAt`, `updatedAt` and `deletedAt` fields. In order to make this replacable in tests, there is an additional abstraction. In your application, you'll need a `@Bean` definition of `InstantProvider` otherwise your application wouldn't start.
+If you check again, our `CatService` requires an `InstantProvider` instance as a dependency. This is required to get the current `java.time.Instant` for dealing with `createdAt`, `updatedAt` and `deletedAt` fields. In order to make this replaceable in tests, there is an additional abstraction. In your application, you'll need a `@Bean` definition of `InstantProvider` otherwise your application wouldn't start.
 
 Luckily, there are already builder methods to get an instance. Easiest way to define this bean would be to define a method in your application class/file.
 
@@ -461,7 +477,7 @@ Now the errors of your application will conform to `CRUDError` schema.
 
 ### 7. Bonus: OpenAPI Documentation with Swagger UI
 
-All this work has a nice bonus. You get properly documented OpenAPI documentation of your API with a Swagger UI to browse and test. After making sure your project contains `org.springdoc:springdoc-openapi-starter-webmvc-ui` as a dependency, you will be able access this.
+All this work has a nice bonus. You get properly documented OpenAPI documentation of your API with a Swagger UI to browse and test. After making sure your project contains `org.springdoc:springdoc-openapi-starter-webmvc-ui` as a dependency, you will be able to access this.
 
 Let's make some small additional customizations first. Update your `Main` as:
 
@@ -553,3 +569,9 @@ This is a variant that takes `Simpler` a step further and removes the model as w
 All other `CRUD*` components follow `Simplest*` naming.
 
 The simplest variant is not recommended for a real-world application as it would lead to exposing your implementation and persistence details to the outside world via your entity type.
+
+## Extending the Domain
+
+So far, the Cat API we built is limited. As the problem domain grows, we are required to add more components. If we decide that "cats can have toys", we would still be able to utilize spring-boot-crud, but it would require some more customizations in order to get the same set of features.
+
+You can find a complete Cat API that supports toys in [kotlin-spring-boot-template](https://github.com/makiftutuncu/kotlin-spring-boot-template) repository.

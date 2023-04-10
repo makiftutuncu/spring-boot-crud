@@ -6,6 +6,7 @@ This is the test module of spring-boot-crud. It brings some test utilities and b
 
 1. [Getting Started](#getting-started)
 2. [Contents](#contents)
+3. [Extending the Domain](#extending-the-domain)
 
 ## Getting Started
 
@@ -48,7 +49,7 @@ There are two main things spring-boot-crud-test provides: a test environment wit
 
 Setting up a proper testing environment can be hard. In tests, especially in unit tests, you'll need mock/dummy/custom implementations of certain components. spring-boot-crud-test tries to make it easier for you to write tests for your applications by providing a few of those.
 
-For the remainder of this document, we'll follow the example from [spring-boot-crud-api](../api/README.md) documentation so we'll add tests to our cats API.
+For the remainder of this document, we'll follow the example from [spring-boot-crud-api](../api/README.md) documentation, so we'll add tests to our cats API.
 
 #### 1.1. [AdjustableInstantProvider](src/main/kotlin/dev/akif/crud/AdjustableInstantProvider.kt)
 
@@ -58,14 +59,32 @@ There is an [InstantProvider](../api/src/main/kotlin/dev/akif/crud/common/Instan
 * An `adjust` method to modify the time so the passage of time can be simulated in tests
 * A `reset` method to reset the modifications made to the time
 
-#### 1.2. [CRUDTestData](src/main/kotlin/dev/akif/crud/CRUDTestData.kt)
+#### 1.2. [InMemoryCRUDRepository](src/main/kotlin/dev/akif/crud/InMemoryCRUDRepository.kt)
+
+This is a map-based in-memory implementation of [CRUDRepository](../api/src/main/kotlin/dev/akif/crud/CRUDRepository.kt) to use in tests. It implements the repository methods the same way a real database. It supports having initial entities and `clean`/`reset` for specific test cases. It can be implemented as:
+
+```kotlin
+import dev.akif.crud.InMemoryCRUDRepository
+import java.util.UUID
+
+object InMemoryCatRepository: InMemoryCRUDRepository<UUID, CatEntity, CreateCat, CatTestData>(CatTestData), CatRepository
+```
+
+Please note:
+
+* This also extends `CatRepository` so it can be injected to `CatService` as a repository dependency.
+
+#### 1.3. [IdGenerator](src/main/kotlin/dev/akif/crud/IdGenerator.kt)
+
+This is a simple interface for generating ids. It is used in `InMemoryCRUDRepository` to generate ids for new entities. It is also used in `CRUDTestData` to generate random ids.
+
+#### 1.4. [CRUDTestData](src/main/kotlin/dev/akif/crud/CRUDTestData.kt)
 
 This lets you organize your test data and gives you some test utilities. Things to highlight are:
 
-* Instances of `InMemoryCRUDRepository` and `AdjustableInstantProvider` are created for you.
+* Gives you access to test utilities.
 * You're required to have 3 different instances of your entity as test data (namely `testEntity1`, `testEntity2` and `testEntity3`). This is to have a minimal setup allowing pagination. You can always define more by setting the `moreTestEntities` array.
 * Since there are entities and entities are mutable by nature, there is a `copy` method so a copy of an entity can be created. This is useful in creating expected cases in assertions.
-* There is a `randomId` method to generate a random id of your entity's id type.
 * There is an `areDuplicates` method for defining the uniqueness condition of your entities.
 * There are `xToY` methods for mapping between different versions of an entity (with or without some modifications). This is useful when testing multiple layers.
 
@@ -74,12 +93,19 @@ A test data class for cats could be implemented as:
 ```kotlin
 import dev.akif.crud.CRUDTestData
 import java.util.UUID
+import org.springframework.data.domain.PageRequest
 
-class CatTestData : CRUDTestData<UUID, CatEntity, Cat, CreateCat, UpdateCat, CatTestData>(typeName = "Cat") {
-    private val catId1 = UUID.randomUUID()
-    private val catId2 = UUID.randomUUID()
-    private val catId3 = UUID.randomUUID()
-
+object CatTestData : CRUDTestData<UUID, CatEntity, Cat, CreateCat, UpdateCat, CatTestData>(typeName = "Cat") {
+    override val repository: InMemoryCRUDRepository<UUID, CatEntity, CreateCat, CatTestData>
+        get() = InMemoryCatRepository
+  
+    override val idGenerator: IdGenerator<UUID> =
+        IdGenerator.uuid
+  
+    private val catId1 = idGenerator.next()
+    private val catId2 = idGenerator.next()
+    private val catId3 = idGenerator.next()
+  
     override val testEntity1: CatEntity =
         CatEntity(
             id = catId1,
@@ -87,11 +113,11 @@ class CatTestData : CRUDTestData<UUID, CatEntity, Cat, CreateCat, UpdateCat, Cat
             breed = "Tabby",
             age = 4,
             version = 0,
-            createdAt = now,
-            updatedAt = now,
+            createdAt = now(),
+            updatedAt = now(),
             deletedAt = null
         )
-
+  
     override val testEntity2: CatEntity =
         CatEntity(
             id = catId2,
@@ -99,11 +125,11 @@ class CatTestData : CRUDTestData<UUID, CatEntity, Cat, CreateCat, UpdateCat, Cat
             breed = "Persian",
             age = 3,
             version = 0,
-            createdAt = now.plusSeconds(1),
-            updatedAt = now.plusSeconds(1),
+            createdAt = now().plusSeconds(1),
+            updatedAt = now().plusSeconds(1),
             deletedAt = null
         )
-
+  
     override val testEntity3: CatEntity =
         CatEntity(
             id = catId3,
@@ -111,19 +137,46 @@ class CatTestData : CRUDTestData<UUID, CatEntity, Cat, CreateCat, UpdateCat, Cat
             breed = "Scottish Fold",
             age = 2,
             version = 0,
-            createdAt = now.plusSeconds(2),
-            updatedAt = now.plusSeconds(2),
+            createdAt = now().plusSeconds(2),
+            updatedAt = now().plusSeconds(2),
             deletedAt = null
         )
-
+  
+    override val defaultFirstPageEntities: List<CatEntity> =
+        listOf(
+            testEntity1,
+            testEntity2,
+            testEntity3
+        )
+  
+    override val paginationTestCases: List<Pair<PageRequest, Paged<CatEntity>>> =
+        listOf(
+            PageRequest.of(0, 2) to Paged(
+                data = listOf(testEntity1, testEntity2),
+                page = 0,
+                perPage = 2,
+                totalPages = 2
+            ),
+            PageRequest.of(1, 2) to Paged(
+                data = listOf(testEntity3),
+                page = 1,
+                perPage = 2,
+                totalPages = 2
+            ),
+            PageRequest.of(2, 2) to Paged.empty(page = 2, perPage = 2, totalPages = 2)
+        )
+  
     override val moreTestEntities: Array<CatEntity> =
         emptyArray()
-
+  
+    override val testParameters: Parameters =
+        Parameters.empty
+  
     override fun areDuplicates(e1: CatEntity, e2: CatEntity): Boolean =
         e1.name == e2.name
-                && e1.breed == e2.breed
-                && e1.age == e2.age
-
+            && e1.breed == e2.breed
+            && e1.age == e2.age
+  
     override fun copy(entity: CatEntity): CatEntity =
         CatEntity(
             id = entity.id,
@@ -135,23 +188,20 @@ class CatTestData : CRUDTestData<UUID, CatEntity, Cat, CreateCat, UpdateCat, Cat
             updatedAt = entity.updatedAt,
             deletedAt = entity.deletedAt
         )
-
-    override fun randomId(): UUID =
-        UUID.randomUUID()
-
+  
     override fun entityToCreateModel(entity: CatEntity): CreateCat =
         CreateCat(
             name = entity.name!!,
             breed = entity.breed!!,
             age = entity.age!!
         )
-
+  
     override fun entityToUpdateModelWithModifications(entity: CatEntity): UpdateCat =
         UpdateCat(
             name = "${entity.name}-updated",
             age = entity.age?.plus(1) ?: 1
         )
-
+  
     override fun entityToUpdateModelWithNoModifications(entity: CatEntity): UpdateCat =
         UpdateCat(
             name = entity.name!!,
@@ -159,10 +209,6 @@ class CatTestData : CRUDTestData<UUID, CatEntity, Cat, CreateCat, UpdateCat, Cat
         )
 }
 ```
-
-#### 1.3. [InMemoryCRUDRepository](src/main/kotlin/dev/akif/crud/InMemoryCRUDRepository.kt)
-
-This is a map-based in-memory implementation of [CRUDRepository](../api/src/main/kotlin/dev/akif/crud/CRUDRepository.kt) to use in tests. It implements the repository methods the same way a real database. It supports having initial entities and `clean`/`reset` for specific test cases.
 
 ### 2. Unit Tests
 
@@ -203,13 +249,14 @@ import java.util.UUID
 
 @DisplayName("CatService")
 class CatServiceTest : CRUDServiceTest<UUID, CatEntity, Cat, CreateCat, UpdateCat, CatMapper, CatRepository, CatService, CatTestData>(
-    typeName = "Cat",
-    mapper = CatMapper(),
-    testData = CatTestData()
-) {
-    override fun buildService(mapper: CatMapper, testData: CatTestData): CatService =
-        CatService(testData.instantProvider, testData.repository, mapper)
-}
+  mapper = CatMapper(ToyMapper()),
+  testData = CatTestData,
+  buildService = { mapper, testData -> CatService(testData.instantProvider, InMemoryCatRepository, mapper) }
+)
 ```
 
 Please note that you can use given dependencies `mapper` and `testData` to build `CatService`. These are the dependencies `CRUDServiceTest` builds for you internally, which are reset for every test case.
+
+## Extending the Domain
+
+Test will also get more complicated as the problem domain grows. You can find a complete Cat API that supports toys in [kotlin-spring-boot-template](https://github.com/makiftutuncu/kotlin-spring-boot-template) repository.
