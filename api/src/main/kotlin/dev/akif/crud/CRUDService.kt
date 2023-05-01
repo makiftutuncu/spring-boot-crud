@@ -46,6 +46,10 @@ abstract class CRUDService<
     protected open val repository: R,
     protected open val mapper: Mapper
 ) {
+    protected val log: Logger by lazy {
+        LoggerFactory.getLogger(javaClass)
+    }
+
     /**
      * Creates given entity using [repository] with given parameters
      *
@@ -224,11 +228,5 @@ abstract class CRUDService<
     private fun assertSingleRowIsAffected(affected: Int, expected: Int): Int {
         check(affected == 1) { "Cannot update ${typeName}Entity, entity version wasn't $expected!" }
         return affected
-    }
-
-    /** @suppress */
-    companion object {
-        @JvmField
-        protected val log: Logger = LoggerFactory.getLogger(CRUDService::class.java)
     }
 }

@@ -61,6 +61,10 @@ abstract class CRUDController<
     protected open val service: S,
     protected open val mapper: DTOMapper
 ) {
+    protected val log: Logger by lazy {
+        LoggerFactory.getLogger(javaClass)
+    }
+
     /**
      * Default implementation for creating a new entity from given create DTO
      *
@@ -303,9 +307,6 @@ abstract class CRUDController<
 
     /** @suppress */
     companion object {
-        @JvmField
-        protected val log: Logger = LoggerFactory.getLogger(CRUDController::class.java)
-
         const val CODE_OK = "200"
         const val CODE_CREATED = "201"
         const val CODE_NO_CONTENT = "204"

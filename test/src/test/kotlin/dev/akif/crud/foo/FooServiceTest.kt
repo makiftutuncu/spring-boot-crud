@@ -9,4 +9,8 @@ class FooServiceTest: CRUDServiceTest<UUID, FooEntity, Foo, CreateFoo, UpdateFoo
     mapper = FooMapper(),
     testData = FooTestData,
     buildService = { mapper, testData -> FooService(testData.instantProvider, InMemoryFooRepository, mapper) }
-)
+) {
+    override fun resetData() {
+        InMemoryFooRepository.reset()
+    }
+}

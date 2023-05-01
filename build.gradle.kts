@@ -1,12 +1,12 @@
 plugins {
-    kotlin("jvm") version "1.8.0"
+    kotlin("jvm") version "1.8.20"
     id("io.github.gradle-nexus.publish-plugin") version "1.1.0"
     id("org.jetbrains.dokka") version "1.7.20"
 }
 
 allprojects {
     group = "dev.akif"
-    version = "0.5.0"
+    version = "0.5.1"
 
     apply(plugin = "org.jetbrains.dokka")
 }
