@@ -13,7 +13,7 @@ plugins {
     `java-library`
     `maven-publish`
     idea
-    kotlin("jvm") version "1.8.20"
+    kotlin("jvm") version "1.8.21"
     signing
 }
 
