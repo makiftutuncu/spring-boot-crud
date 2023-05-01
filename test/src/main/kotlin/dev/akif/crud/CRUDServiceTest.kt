@@ -48,10 +48,15 @@ abstract class CRUDServiceTest<
      */
     protected lateinit var service: S
 
+    /**
+     * Resets test data, called before each test method.
+     */
+    protected abstract fun resetData()
+
     /** @suppress */
     @BeforeEach
     fun setUp() {
-        testData.repository.reset()
+        resetData()
         testData.instantProvider.reset()
         service = buildService(mapper, testData)
     }
