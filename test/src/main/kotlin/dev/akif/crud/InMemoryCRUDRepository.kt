@@ -1,6 +1,8 @@
 package dev.akif.crud
 
 import dev.akif.crud.error.CRUDErrorException
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
@@ -23,6 +25,10 @@ open class InMemoryCRUDRepository<
         TestData : CRUDTestData<I, E, *, CM, *, TestData>>(
     protected val testData: TestData
 ) : CRUDRepository<I, E> {
+    private val log: Logger by lazy {
+        LoggerFactory.getLogger(javaClass)
+    }
+
     /**
      * Map of entities by their ids, accessible for tests
      */
@@ -69,7 +75,9 @@ open class InMemoryCRUDRepository<
             ?: 0
     }
 
-    override fun flush() {}
+    override fun flush() {
+        log.debug("Flushed repository: $entities")
+    }
 
     /**
      * Clears the repository for testing, there will be no entities left after this.
@@ -83,10 +91,13 @@ open class InMemoryCRUDRepository<
      */
     fun reset() {
         entities.clear()
-        testData.testEntity1.apply { entities[id!!] = this }
-        testData.testEntity2.apply { entities[id!!] = this }
-        testData.testEntity3.apply { entities[id!!] = this }
-        testData.moreTestEntities.forEach { it.apply { entities[id!!] = this } }
+        entities[testData.testEntity1.id!!] = testData.testEntity1
+        entities[testData.testEntity2.id!!] = testData.testEntity2
+        entities[testData.testEntity3.id!!] = testData.testEntity3
+        testData.moreTestEntities.forEach { testEntity ->
+            entities[testEntity.id!!] = testEntity
+        }
+        log.debug("Reset repository: $entities")
     }
 
     private fun handleDuplicates(entity: E, data: Any) {

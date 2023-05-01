@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.jetbrains.dokka.base.DokkaBase
 import org.jetbrains.dokka.base.DokkaBaseConfiguration
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -10,12 +12,12 @@ plugins {
     `java-library`
     `maven-publish`
     idea
-    kotlin("jvm") version "1.8.0"
+    kotlin("jvm") version "1.8.20"
     signing
 }
 
 val junitVersion = "5.9.2"
-val springBootVersion = "3.0.5"
+val springBootVersion = "3.0.6"
 val springdocVersion = "2.0.2"
 
 dependencies {
@@ -92,13 +94,15 @@ tasks.getByName<Test>("test") {
     useJUnitPlatform()
     testLogging {
         events = setOf(
-            org.gradle.api.tasks.testing.logging.TestLogEvent.PASSED,
-            org.gradle.api.tasks.testing.logging.TestLogEvent.SKIPPED,
-            org.gradle.api.tasks.testing.logging.TestLogEvent.FAILED
+            TestLogEvent.PASSED,
+            TestLogEvent.SKIPPED,
+            TestLogEvent.FAILED
         )
+        exceptionFormat = TestExceptionFormat.SHORT
         showCauses = true
         showExceptions = true
         showStackTraces = true
+        showStandardStreams = true
     }
 }
 
