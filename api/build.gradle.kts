@@ -18,7 +18,7 @@ plugins {
 
 val junitVersion = "5.9.3"
 val springBootVersion = "3.0.6"
-val springdocVersion = "2.1.0"
+val springdocVersion = "2.6.0"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa:$springBootVersion")
