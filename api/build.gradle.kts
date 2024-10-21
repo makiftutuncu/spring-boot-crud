@@ -16,7 +16,7 @@ plugins {
     signing
 }
 
-val junitVersion = "5.9.3"
+val junitVersion = "5.11.3"
 val springBootVersion = "3.0.6"
 val springdocVersion = "2.1.0"
 
