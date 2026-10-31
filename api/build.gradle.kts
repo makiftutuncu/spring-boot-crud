@@ -33,7 +33,7 @@ dependencies {
 
 buildscript {
     dependencies {
-        classpath("org.jetbrains.dokka:dokka-base:1.8.10")
+        classpath("org.jetbrains.dokka:dokka-base:1.9.20")
     }
 }
 
